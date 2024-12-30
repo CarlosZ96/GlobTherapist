@@ -1,0 +1,27 @@
+name: Lint React Project
+
+on: [push, pull_request]
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18  # Usa la versión de Node.js que prefieras
+
+      - name: Install dependencies
+        run: npm install
+
+      # Lint JavaScript/JSX/TypeScript con ESLint
+      - name: Run ESLint
+        run: npx eslint . --ext .js,.jsx,.ts,.tsx
+
+      # Lint CSS y SCSS con Stylelint
+      - name: Run Stylelint
+        run: npx stylelint "**/*.{css,scss}" --allow-empty-input
