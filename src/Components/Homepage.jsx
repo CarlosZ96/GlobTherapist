@@ -1,4 +1,5 @@
-import React from 'react'
+/* eslint linebreak-style: ["error", "windows"] */
+import React from 'react';
 
 const Homepage = () => {
     return (
@@ -7,7 +8,7 @@ const Homepage = () => {
             <h2>Especialistas</h2>
             <h2>¿Quiénes somos?</h2>
         </header>
-    )
-}
+    );
+};
 
-export default Homepage
+export default Homepage;

@@ -1,58 +1,65 @@
 {
-    "env": {
-      "browser": true,
-      "es6": true,
-      "jest": true
+  "env": {
+    "browser": true,
+    "es6": true,
+    "jest": true
+  },
+  "parser": "@babel/eslint-parser",
+  "parserOptions": {
+    "ecmaFeatures": {
+      "jsx": true
     },
-    "parser": "@babel/eslint-parser",
-    "parserOptions": {
-      "ecmaFeatures": {
-        "jsx": true
-      },
-      "ecmaVersion": 2018,
-      "sourceType": "module"
-    },
-    "extends": [
-      "airbnb",
-      "plugin:react/recommended",
-      "plugin:react-hooks/recommended"
+    "ecmaVersion": 2018,
+    "sourceType": "module"
+  },
+  "extends": [
+    "airbnb",
+    "plugin:react/recommended",
+    "plugin:react-hooks/recommended"
+  ],
+  "plugins": [
+    "react"
+  ],
+  "rules": {
+    "react/function-component-definition": "off",
+    "arrow-body-style": "off",
+    "semi": [
+      "error",
+      "always"
     ],
-    "plugins": [
-      "react"
+    "indent": [
+      "error",
+      2
     ],
-    "rules": {
-      "react/jsx-filename-extension": [
-        "warn",
-        {
-          "extensions": [
-            ".js",
-            ".jsx"
-          ]
-        }
+    "react/jsx-indent": [
+      "error",
+      2
+    ],
+    "eol-last": [
+      "error",
+      "always"
+    ],
+    "linebreak-style": 0
+  },
+  "overrides": [
+    {
+      // feel free to replace with your preferred file pattern - eg. 'src/**/*Slice.js' or 'redux/**/*Slice.js'
+      "files": [
+        "src/**/*Slice.js"
       ],
-      "react/react-in-jsx-scope": "off",
-      "import/no-unresolved": "off",
-      "no-shadow": "off"
-    },
-    "overrides": [
-      {
-        // feel free to replace with your preferred file pattern - eg. 'src/**/*Slice.js' or 'redux/**/*Slice.js'
-        "files": [
-          "src/**/*Slice.js"
-        ],
-        // avoid state param assignment
-        "rules": {
-          "no-param-reassign": [
-            "error",
-            {
-              "props": false
-            }
-          ]
-        }
+      // avoid state param assignment
+      "rules": {
+        "no-param-reassign": [
+          "error",
+          {
+            "props": false
+          }
+        ]
       }
-    ],
-    "ignorePatterns": [
-      "dist/",
-      "build/"
-    ]
-  }
+    }
+  ],
+  "ignorePatterns": [
+    "dist/",
+    "build/"
+  ]
+}
