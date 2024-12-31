@@ -15,10 +15,10 @@
     ],
     "indent": [
       "error",
-      2
+      4
     ],
     "react/function-component-definition": [
-      2,
+      4,
       {
         "namedComponents": "arrow-function",
         "unnamedComponents": "arrow-function"
@@ -36,6 +36,7 @@
       "error",
       "always"
     ],
-    "linebreak-style": 0
+    "linebreak-style": 0,
+    "ignoreFiles": ["build/**", "dist/**", "**/reset*.css", "**/bootstrap*.css", "**/*.js", "**/*.jsx"]
   }
 }

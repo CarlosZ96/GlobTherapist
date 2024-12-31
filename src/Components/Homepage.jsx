@@ -2,7 +2,7 @@
 import React from 'react';
 
 const Homepage = () => {
-    return (
+  return (
         <header>
             <h1>GTH</h1>
             <h2>Especialistas</h2>
