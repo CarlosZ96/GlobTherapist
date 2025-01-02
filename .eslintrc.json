@@ -27,13 +27,21 @@
       "error",
       "always"
     ],
-    "indent": [
+   "indent": [
       "error",
-      2
+      4,
+      {
+        "SwitchCase": 1,
+        "ignoredNodes": ["JSXElement *", "JSXElement"]
+      }
     ],
     "react/jsx-indent": [
       "error",
-      2
+      8
+    ],
+    "react/jsx-indent-props": [
+      "error",
+      8
     ],
     "eol-last": [
       "error",
