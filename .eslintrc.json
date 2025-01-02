@@ -27,9 +27,9 @@
       "error",
       "always"
     ],
-   "indent": [
+    "indent": [
       "error",
-      4,
+      2,
       {
         "SwitchCase": 1,
         "ignoredNodes": ["JSXElement *", "JSXElement"]
@@ -37,11 +37,11 @@
     ],
     "react/jsx-indent": [
       "error",
-      8
+      2
     ],
     "react/jsx-indent-props": [
       "error",
-      8
+      2
     ],
     "eol-last": [
       "error",
@@ -51,11 +51,9 @@
   },
   "overrides": [
     {
-      // feel free to replace with your preferred file pattern - eg. 'src/**/*Slice.js' or 'redux/**/*Slice.js'
       "files": [
         "src/**/*Slice.js"
       ],
-      // avoid state param assignment
       "rules": {
         "no-param-reassign": [
           "error",

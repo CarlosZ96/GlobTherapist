@@ -1,4 +1,4 @@
-/* eslint-disable react/react-in-jsx-scope */
+import React from 'react';
 import { Route, Routes } from 'react-router-dom';
 import './App.css';
 import Mainpage from './Components/Homepage';
