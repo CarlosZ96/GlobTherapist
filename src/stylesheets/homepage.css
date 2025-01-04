@@ -1,0 +1,21 @@
+.Home-Page {
+    height: max-content;
+    width: 100%;
+}
+
+.Home-Roof {
+    display: flex;
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    height: 8vh;
+    background-color: #01268d;
+}
+
+.Home-txt {
+    color: #fff;
+}
+
+.Home-windows {
+    display: flex;
+}
