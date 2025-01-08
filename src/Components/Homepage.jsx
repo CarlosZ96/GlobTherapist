@@ -19,7 +19,24 @@ const Homepage = () => {
           </button>
         </div>
       </header>
-      <div className="Home-body" />
+      <div className="Home-body">
+        <div className="GlobThera">
+          <h1 className="Glob-title">GLOBTHERAPIST</h1>
+        </div>
+        <div className="Glob-body">
+          <div className="Glob-img-cont">
+            <img src="" alt="" />
+          </div>
+          <div className="Glob-txt-cont">
+            <p>Solicita tu cita en línea desde cualquier lugar.</p>
+          </div>
+          <div className="Glob-btn-cont">
+            <button type="submit">
+              <h3>Agenda</h3>
+            </button>
+          </div>
+        </div>
+      </div>
     </div>
   );
 };
