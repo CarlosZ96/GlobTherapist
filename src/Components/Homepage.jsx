@@ -1,5 +1,7 @@
 import React from 'react';
 import '../stylesheets/homepage.css';
+import med from '../img/HANIS 1.png';
+import Globody from './Globody';
 
 const Homepage = () => {
   return (
@@ -25,7 +27,7 @@ const Homepage = () => {
         </div>
         <div className="Glob-body">
           <div className="Glob-img-cont">
-            <img src="" alt="" />
+            <img src={med} alt="" />
           </div>
           <div className="Glob-txt-cont">
             <p>Solicita tu cita en línea desde cualquier lugar.</p>
@@ -36,6 +38,7 @@ const Homepage = () => {
             </button>
           </div>
         </div>
+        <Globody />
       </div>
     </div>
   );
