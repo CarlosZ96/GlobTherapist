@@ -11,11 +11,11 @@ const Homepage = () => {
           <h2>Especialistas</h2>
           <h2>¿Quiénes somos?</h2>
         </div>
-        <div>
-          <button type="submit">
+        <div className="Log-Btn-Cont">
+          <button type="submit" className="Log-Btn">
             <h3>Loguearse</h3>
           </button>
-          <button type="submit">
+          <button type="submit" className="Log-Btn">
             <h3>Crear Cuenta</h3>
           </button>
         </div>

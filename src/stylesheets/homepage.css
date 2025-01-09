@@ -20,6 +20,23 @@
     display: flex;
 }
 
+.Log-Btn-Cont {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 28vw;
+    background-color: #40f246;
+}
+
+.Log-Btn {
+    width: 40%;
+    height: 60%;
+}
+
+.Log-Btn h3{
+    margin: 0;
+}
+
 .Home-body {
     display: flex;
     flex-direction: column;
