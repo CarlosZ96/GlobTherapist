@@ -20,7 +20,7 @@ const Globody = () => {
               <p>Solicita tu cita en línea desde cualquier lugar.</p>
             </div>
             <div className="Glob-btn-cont">
-              <button type="submit">
+              <button type="submit" className="Glob-btn">
                 <h3>Agenda</h3>
               </button>
             </div>
@@ -29,31 +29,39 @@ const Globody = () => {
       </div>
       <div className="Theras-cont">
         <div className="Therapy">
-          <h3>Lenguaje</h3>
+          <h3 className="Therapy-title">Lenguaje</h3>
           <div className="Theras-body">
             <img src={len} alt="lenguaje" className="Theras-img" />
-            <button type="button" className="Theras-btn">+</button>
+            <div className="Theras-btn-cont">
+              <button type="button" className="Theras-btn">+</button>
+            </div>
           </div>
         </div>
         <div className="Therapy">
-          <h3>Fisica</h3>
+          <h3 className="Therapy-title">Fisica</h3>
           <div className="Theras-body">
             <img src={exe} alt="lenguaje" className="Theras-img" />
-            <button type="button" className="Theras-btn">+</button>
+            <div className="Theras-btn-cont">
+              <button type="button" className="Theras-btn">+</button>
+            </div>
           </div>
         </div>
         <div className="Therapy">
-          <h3>Mental</h3>
+          <h3 className="Therapy-title">Mental</h3>
           <div className="Theras-body">
             <img src={bra} alt="lenguaje" className="Theras-img" />
-            <button type="button" className="Theras-btn">+</button>
+            <div className="Theras-btn-cont">
+              <button type="button" className="Theras-btn">+</button>
+            </div>
           </div>
         </div>
         <div className="Therapy">
-          <h3>Ocupacional</h3>
+          <h3 className="Therapy-title">Ocupacional</h3>
           <div className="Theras-body">
             <img src={cas} alt="lenguaje" className="Theras-img" />
-            <button type="button" className="Theras-btn">+</button>
+            <div className="Theras-btn-cont">
+              <button type="button" className="Theras-btn">+</button>
+            </div>
           </div>
         </div>
       </div>

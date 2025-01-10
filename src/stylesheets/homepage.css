@@ -3,6 +3,18 @@
     width: 100%;
 }
 
+.Home-txt {
+    width: 10%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+.Home-txt h1 {
+    margin: 0;
+}
+
 .Home-Roof {
     display: flex;
     margin: 0;
@@ -18,23 +30,51 @@
 
 .Home-windows {
     display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+    width: 62%;
+}
+
+.Home-windows h2 {
+    width: 46%;
+    color: #fff;
+    margin: 0;
 }
 
 .Log-Btn-Cont {
     display: flex;
-    justify-content: center;
     align-items: center;
+    justify-content: space-around;
     width: 28vw;
-    background-color: #40f246;
+    border-radius: 5px;
+}
+
+.Log-Btn-Cont h3 {
+    color: #fff;
+    font-size: 13px;
 }
 
 .Log-Btn {
     width: 40%;
     height: 60%;
+    background: none;
+    border: 2px #fff solid;
 }
 
-.Log-Btn h3{
+.Log-Btn-Cont :hover {
+    background-color: #fff;
+    color: #01268d;
+}
+
+.Log-Btn h3 {
     margin: 0;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
 }
 
 .Home-body {
@@ -42,21 +82,30 @@
     flex-direction: column;
     align-items: center;
     width: 100vw;
+    max-height: 92vh;
     height: max-content;
+    overflow-y: auto;
     background-color: #fff;
 }
 
 .GlobThera {
     width: 90vw;
-    height: 36vh;
-    background-color: #01268d;
+    height: 40vh;
+    background-color: #2b3e9d;
     border-radius: 5px;
-    margin-top: 2%;
+    margin-top: 3%;
+    margin-bottom: 3%;
 }
 
 .Glob-title {
+    width: 100%;
+    height: 20%;
     margin: 0;
-    color: #fff;
+    color: #ffffffb4;
+    font-size: 8vw;
+    font-family: "Itim", serif;
+    font-weight: 400;
+    font-style: normal;
 }
 
 .GlobThera-body {
@@ -70,17 +119,56 @@
     align-items: center;
     justify-content: center;
     width: 50%;
-    height: 92%;
-}
-
-.Glob-img {
-    width: 80%;
     height: 90%;
 }
 
+.Glob-img {
+    max-width: 40%;
+}
+
 .Glob-txt-btn-conts {
+    display: flex;
+    flex-direction: column;
+    flex-wrap: wrap;
+    align-content: center;
+    justify-content: space-around;
+    align-items: center;
     width: 50%;
-    height: 92%;
+    height: 89%;
+    color: #fff;
+    font-size: 3vw;
+}
+
+.Glob-txt-cont {
+    display: flex;
+    flex-direction: column;
+    flex-wrap: wrap;
+    align-content: center;
+    justify-content: end;
+    height: 49%;
+}
+
+.Glob-btn-cont {
+    width: 90%;
+    display: flex;
+    flex-direction: column;
+    align-items: end;
+}
+
+.Glob-btn {
+    height: 100%;
+    width: 60%;
+    background-color: #ffffffb4;
+    color: #2b3e9d;
+    border: none;
+    border-radius: 50px;
+    font-family: "Itim", serif;
+    font-weight: 400;
+    font-style: normal;
+}
+
+.Glob-txt-cont p {
+    margin: 0;
 }
 
 .Theras-cont {
@@ -89,29 +177,48 @@
     grid-template-rows: 1fr 1fr;
     align-items: center;
     justify-items: center;
+    gap: 2%;
     width: 90vw;
     height: 54vh;
     background-color: #6e6e6e;
 }
 
+.Theras-cont>.Therapy:nth-child(1) {
+    background-color: #7C95A6;
+}
+
+.Theras-cont>.Therapy:nth-child(2) {
+    background-color: #DEB841;
+}
+
+.Theras-cont>.Therapy:nth-child(3) {
+    background-color: #40F246;
+}
+
+.Theras-cont>.Therapy:nth-child(4) {
+    background-color: #2B3A67;
+}
+
+.Theras-body {
+    display: flex;
+}
+
+.Theras-img {
+    width: 50%;
+}
+
 .Therapy {
     width: 100%;
     height: 100%;
-
+    border-radius: 20px;
 }
 
-.Theras-cont :nth-child(1) {
-    background-color: #7c95a6;
-}
 
-.Theras-cont :nth-child(2) {
-    background-color: #deB841;
-}
-
-.Theras-cont :nth-child(3) {
-    background-color: #40f246;
-}
-
-.Theras-cont :nth-child(4) {
-    background-color: #2b3a67;
+.Therapy-title {
+    color: #01268d;
+    font-family: "Itim", serif;
+    font-weight: 400;
+    font-style: normal;
+    font-size: 6vw;
+    margin: 0;
 }
