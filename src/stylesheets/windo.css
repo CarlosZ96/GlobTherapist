@@ -1,0 +1,9 @@
+.Log-cont {
+    position: absolute;
+    left: 65%;
+    top: 5%;
+    width: 33vw;
+    height: 36vh;
+    border: 3px #01268d solid;
+    background-color: #fff;
+}

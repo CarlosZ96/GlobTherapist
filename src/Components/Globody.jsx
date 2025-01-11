@@ -33,7 +33,9 @@ const Globody = () => {
           <div className="Theras-body">
             <img src={len} alt="lenguaje" className="Theras-img" />
             <div className="Theras-btn-cont">
-              <button type="button" className="Theras-btn">+</button>
+              <button type="button" className="Theras-btn">
+                <p>+</p>
+              </button>
             </div>
           </div>
         </div>
@@ -42,7 +44,9 @@ const Globody = () => {
           <div className="Theras-body">
             <img src={exe} alt="lenguaje" className="Theras-img" />
             <div className="Theras-btn-cont">
-              <button type="button" className="Theras-btn">+</button>
+              <button type="button" className="Theras-btn">
+                <p>+</p>
+              </button>
             </div>
           </div>
         </div>
@@ -51,7 +55,9 @@ const Globody = () => {
           <div className="Theras-body">
             <img src={bra} alt="lenguaje" className="Theras-img" />
             <div className="Theras-btn-cont">
-              <button type="button" className="Theras-btn">+</button>
+              <button type="button" className="Theras-btn">
+                <p>+</p>
+              </button>
             </div>
           </div>
         </div>
@@ -60,7 +66,9 @@ const Globody = () => {
           <div className="Theras-body">
             <img src={cas} alt="lenguaje" className="Theras-img" />
             <div className="Theras-btn-cont">
-              <button type="button" className="Theras-btn">+</button>
+              <button type="button" className="Theras-btn">
+                <p>+</p>
+              </button>
             </div>
           </div>
         </div>
