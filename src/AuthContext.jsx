@@ -1,8 +1,10 @@
-import React, { createContext, useContext, useState, useEffect, useMemo} from 'react';
+import React, {
+  createContext, useContext, useState, useEffect, useMemo,
+} from 'react';
 import { onAuthStateChanged, signInWithEmailAndPassword, signOut } from 'firebase/auth';
 import PropTypes from 'prop-types';
 import { doc, getDoc } from 'firebase/firestore';
-import { auth, db } from '../firebase';
+import { auth, db } from './firebase';
 
 const AuthContext = createContext();
 
@@ -26,6 +28,7 @@ export const AuthProvider = ({ children }) => {
           }
         } catch (error) {
           console.error('Error fetching user data: ', error);
+          console.log(process.env.REACT_APP_API_KEY);
         }
       } else {
         setUserData(null);
