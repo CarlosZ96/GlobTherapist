@@ -13,6 +13,7 @@ export const useAuth = () => useContext(AuthContext);
 export const AuthProvider = ({ children }) => {
   const [currentUser, setCurrentUser] = useState(null);
   const [userData, setUserData] = useState(null);
+  const [isAdmin, setIsAdmin] = useState(false);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -22,7 +23,8 @@ export const AuthProvider = ({ children }) => {
         try {
           const userDoc = await getDoc(doc(db, 'users', user.uid));
           if (userDoc.exists()) {
-            setUserData(userDoc.data());
+            const data = userDoc.data();
+            setIsAdmin(data.role === 'admin');
           } else {
             console.error('No user data found in Firestore');
           }
@@ -32,6 +34,7 @@ export const AuthProvider = ({ children }) => {
         }
       } else {
         setUserData(null);
+        setIsAdmin(false);
       }
       setLoading(false);
     });
@@ -46,8 +49,9 @@ export const AuthProvider = ({ children }) => {
     currentUser,
     userData,
     login,
+    isAdmin,
     logout,
-  }), [currentUser, userData]);
+  }), [currentUser, userData, isAdmin]);
 
   return (
     <AuthContext.Provider value={value}>

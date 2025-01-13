@@ -5,12 +5,13 @@ import { doc, setDoc } from 'firebase/firestore';
 import '../../stylesheets/windo.css';
 import { auth, db } from '../../firebase';
 
-const Create = ({ toggleCreate }) => { // Recibe toggleCreate como prop
+const Create = ({ toggleCreate }) => {
   const [formData, setFormData] = useState({
     email: '',
     phone: '',
     userName: '',
     password: '',
+    role: '',
   });
 
   const handleChange = (e) => {
@@ -42,14 +43,13 @@ const Create = ({ toggleCreate }) => { // Recibe toggleCreate como prop
         email: formData.email,
         telefono: formData.phone,
         Citas: [],
+        role: 'usuario',
       });
 
       alert('Usuario creado con éxito');
       setFormData({
         email: '', phone: '', userName: '', password: '',
       });
-
-      // Llamar a toggleCreate para cerrar la ventana de Create
       toggleCreate();
     } catch (error) {
       console.error('Error creando el usuario:', error);
