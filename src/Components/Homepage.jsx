@@ -4,7 +4,6 @@ import '../stylesheets/windo.css';
 import Globody from './Globody';
 import Login from './windows/login';
 import Create from './windows/Create';
-import Therapy from './Therapy';
 import { useAuth } from '../AuthContext';
 
 const Homepage = () => {
@@ -53,7 +52,6 @@ const Homepage = () => {
         )}
       </header>
       <Globody />
-      <Therapy />
       <div style={{ display: showLogin ? 'block' : 'none' }}>
         <Login toggleLogin={toggleLogin} />
       </div>

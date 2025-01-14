@@ -1,24 +1,29 @@
 import React from 'react';
 import Calendar from './Calendar';
+import '../stylesheets/Therapy.css';
 
 const Therapy = () => {
   return (
-    <div>
-      <h1>GLOBTHERAPIST</h1>
+    <div className="Therapy-body">
+      <div className="Therapy-title-cont">
+        <h1>GLOBTHERAPIST</h1>
+      </div>
       <form className="Ask-Therapy">
-        <h2>Solicitar Cita</h2>
+        <div className="Ask-Therapy-subtittle">
+          <h2>Agenda tu terapia</h2>
+        </div>
         <div className="Ask-Therapy-fields-conts">
           <div className="Ask-Therapy-field-cont">
             <h3>Nombre completo:</h3>
-            <input type="text" />
+            <input className="Ask-Therapy-fields-input" type="text" />
           </div>
           <div className="Ask-Therapy-field-cont">
             <h3>Teléfono:</h3>
-            <input type="text" />
+            <input className="Ask-Therapy-fields-input" type="text" />
           </div>
           <div className="Ask-Therapy-field-cont">
             <h3>Email:</h3>
-            <input type="text" />
+            <input className="Ask-Therapy-fields-input" type="text" />
           </div>
         </div>
         <hr className="white-line" />
