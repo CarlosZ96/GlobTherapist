@@ -1,4 +1,5 @@
 import React from 'react';
+import '../stylesheets/Therapy.css';
 
 const Calendar = () => {
   return (
@@ -8,7 +9,7 @@ const Calendar = () => {
       </div>
       <div className="Ask-Therapy-date-weekly">
         <hr />
-        <div>
+        <div className="Ask-Therapy-weekly-days-cont">
           <h4 className="Ask-Therapy-day">Lun</h4>
           <h4 className="Ask-Therapy-day">Mar</h4>
           <h4 className="Ask-Therapy-day">Mie</h4>

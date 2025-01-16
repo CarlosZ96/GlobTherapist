@@ -117,8 +117,13 @@
     align-items: center;
     justify-items: center;
     width: 100%;
-    height: 30vh;
-    background-color: #0c2292;
+    height: 38vh;
+}
+
+.white-line {
+    height: 5px;
+    width: 86%;
+    background-color: #fff;
 }
 
 .Therapy-tittle-cont {
@@ -128,7 +133,6 @@
     justify-content: center;
     width: 90%;
     height: 60%;
-    background-color: #7c95a6;
 }
 
 .Therapy-tittle {
@@ -137,4 +141,70 @@
     font-weight: 400;
     font-style: normal;
     color: #0c2292;
+}
+
+.Therapies-cont>.Therapy-tittle-cont:nth-child(1) {
+    background-color: #deB841;
+}
+
+.Therapies-cont>.Therapy-tittle-cont:nth-child(2) {
+    background-color: #7C95A6;
+}
+
+.Therapies-cont>.Therapy-tittle-cont:nth-child(3) {
+    background-color: #40F246;
+}
+
+.Therapies-cont>.Therapy-tittle-cont:nth-child(4) {
+    background-color: #2B3A67;
+}
+
+.Therapies-cont .Therapy-tittle-cont:last-child .Therapy-tittle {
+    color: #fff;
+}
+
+.Therapy-txt-field {
+    height: 30vh;
+    width: 100%;
+    background-color: #fff;
+}
+
+.Therapy-info {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+.Therapy-info h3 {
+    font-size: 4vw;
+    font-family: "Itim", serif;
+    font-weight: 400;
+    font-style: normal;
+    color: #fff;
+}
+
+.Ask-Therapy-pros-cont {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: 1fr 1fr;
+    align-items: center;
+    justify-items: center;
+    width: 100%;
+}
+
+.Ask-Therapy-txt {
+    width: 90%;
+}
+
+.Ask-Therapy-date-cont {
+    width: 90%;
+}
+
+
+.Ask-Therapy-weekly-days-cont {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
 }

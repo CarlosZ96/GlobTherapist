@@ -45,7 +45,7 @@ const Therapy = () => {
           </div>
         </div>
         <div className="Therapy-info">
-          <h3>Explicanos bevemente por que rquieres tu terapia</h3>
+          <h3>Explícanos brevemente por qué requieres tu terapia.</h3>
           <p className="Therapy-txt-field">...</p>
         </div>
         <hr className="white-line" />
