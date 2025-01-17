@@ -1,6 +1,6 @@
 import React from 'react';
 import { Route, Routes } from 'react-router-dom';
-import Month from './Components/Month';
+import CreatePro from './Components/CreatePro';
 import './App.css';
 import Mainpage from './Components/Homepage';
 
@@ -9,7 +9,7 @@ function App() {
     <div className="App">
       <Routes>
         <Route path="/" element={<Mainpage />} />
-        <Route path="/ca" element={<Month />} />
+        <Route path="/ca" element={<CreatePro />} />
       </Routes>
     </div>
   );

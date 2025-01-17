@@ -200,11 +200,3 @@
 .Ask-Therapy-date-cont {
     width: 90%;
 }
-
-
-.Ask-Therapy-weekly-days-cont {
-    display: flex;
-    flex-direction: row;
-    align-items: center;
-    justify-content: center;
-}

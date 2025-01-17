@@ -5,14 +5,15 @@ import { doc, setDoc } from 'firebase/firestore';
 import '../../stylesheets/windo.css';
 import { auth, db } from '../../firebase';
 
-const Create = ({ toggleCreate }) => {
+const Create = ({ toggleCreate, toggleCreatePro }) => {
   const [formData, setFormData] = useState({
     email: '',
     phone: '',
     userName: '',
     password: '',
-    role: '',
   });
+
+  const [showMoreInfo, setShowMoreInfo] = useState(false);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -58,57 +59,94 @@ const Create = ({ toggleCreate }) => {
   };
 
   return (
-    <form className="Create-cont" onSubmit={handleSubmit}>
-      <div>
-        <h1>Crear Usuario</h1>
-      </div>
-      <div>
-        <h3>Correo:</h3>
-        <input
-          type="email"
-          name="email"
-          value={formData.email}
-          onChange={handleChange}
-        />
-      </div>
-      <div>
-        <h3>Numero de Telefono:</h3>
-        <input
-          type="number"
-          name="phone"
-          value={formData.phone}
-          onChange={handleChange}
-        />
-      </div>
-      <div>
-        <h3>Nombre De Usuario:</h3>
-        <input
-          type="text"
-          name="userName"
-          value={formData.userName}
-          onChange={handleChange}
-        />
-      </div>
-      <div>
-        <h3>Contraseña:</h3>
-        <input
-          type="password"
-          name="password"
-          value={formData.password}
-          onChange={handleChange}
-        />
-      </div>
-      <div>
-        <button type="submit">
-          <h3>Confirmar</h3>
-        </button>
-      </div>
-    </form>
+    <div className="Create-cont">
+      <form className="Create-body" onSubmit={handleSubmit}>
+        <div className="Create-title-cont">
+          <h1>Crear Usuario</h1>
+        </div>
+        <div className="Create-input-cont">
+          <h3>Correo:</h3>
+          <input
+            type="email"
+            name="email"
+            className="Create-input"
+            value={formData.email}
+            onChange={handleChange}
+          />
+        </div>
+        <div className="Create-input-cont">
+          <h3>Telefono:</h3>
+          <input
+            type="number"
+            name="phone"
+            className="Create-input"
+            value={formData.phone}
+            onChange={handleChange}
+          />
+        </div>
+        <div className="Create-input-cont">
+          <h3>Nombre De Usuario:</h3>
+          <input
+            type="text"
+            name="userName"
+            className="Create-input"
+            value={formData.userName}
+            onChange={handleChange}
+          />
+        </div>
+        <div className="Create-input-cont">
+          <h3>Contraseña:</h3>
+          <input
+            type="password"
+            name="password"
+            className="Create-input"
+            value={formData.password}
+            onChange={handleChange}
+          />
+        </div>
+        <div className="create-submit-cont">
+          <button type="submit">
+            <h3>Confirmar</h3>
+          </button>
+        </div>
+        <div className="Create-pro-popup">
+          <h4>¿Eres profesional de la salud?</h4>
+          <button
+            type="button"
+            onClick={() => setShowMoreInfo(!showMoreInfo)}
+          >
+            Saber más
+          </button>
+        </div>
+      </form>
+
+      {showMoreInfo && (
+        <div className="overlay">
+          <div className="info-popup">
+            <p>
+              Si eres profesional y te gustaría trabajar con nosotros, puedes
+              registrarte y brindar tus servicios de terapias en línea.
+            </p>
+            <button
+              type="button"
+              onClick={() => {
+                setShowMoreInfo(false);
+                toggleCreate();
+                toggleCreatePro();
+              }}
+            >
+              Crear Cuenta Pro
+            </button>
+          </div>
+        </div>
+      )}
+    </div>
   );
 };
 
 Create.propTypes = {
   toggleCreate: PropTypes.func.isRequired,
+  toggleCreatePro: PropTypes.func.isRequired,
 };
 
 export default Create;

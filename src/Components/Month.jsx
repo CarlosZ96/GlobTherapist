@@ -4,8 +4,9 @@ import {
   doc, setDoc, deleteDoc, collection, getDocs,
 } from 'firebase/firestore';
 import { db } from '../firebase';
+import '../stylesheets/month.css';
 
-const Calendar = () => {
+const Month = () => {
   const [currentMonth, setCurrentMonth] = useState('');
   const [days, setDays] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -56,7 +57,7 @@ const Calendar = () => {
 
   const getStartDayOfMonth = (year, month) => {
     const firstDay = new Date(year, month, 1);
-    return (firstDay.getDay() + 6) % 7; // Ajustamos para que empiece con lunes
+    return (firstDay.getDay() + 6) % 7;
   };
 
   useEffect(() => {
@@ -93,12 +94,16 @@ const Calendar = () => {
   return (
     <div className="calendar-container">
       <h2 className="calendar-title">{currentMonth}</h2>
-      <div className="calendar-grid">
+      <hr className="blue-line" />
+      <div className="calendar-week-cont">
         {daysOfWeek.map((day, index) => (
           <div key={index} className="calendar-day-header">
             {day}
           </div>
         ))}
+      </div>
+      <hr className="blue-line" />
+      <div className="calendar-grid">
         {paddedDays.map((day, index) => (
           <div
             key={index}
@@ -112,4 +117,4 @@ const Calendar = () => {
   );
 };
 
-export default Calendar;
+export default Month;
