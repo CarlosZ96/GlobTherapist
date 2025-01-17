@@ -156,3 +156,14 @@
     font-family: "Itim", serif;
     font-weight: 300;
 }
+
+.CreatePro-cont {
+    position: absolute;
+    left: 65%;
+    top: 8%;
+    z-index: 101;
+    width: 33vw;
+    height: max-content;
+    border: 3px #01268d solid;
+    background-color: #fff;
+}

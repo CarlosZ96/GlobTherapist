@@ -1,33 +1,43 @@
-/* eslint-disable jsx-a11y/no-static-element-interactions */
-/* eslint-disable jsx-a11y/click-events-have-key-events */
+/* eslint-disable jsx-a11y/label-has-associated-control */
 import React, { useState } from 'react';
 import PropTypes from 'prop-types';
-import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { doc, setDoc } from 'firebase/firestore';
-import { db, storage } from '../firebase';
+import { createUserWithEmailAndPassword } from 'firebase/auth';
+import { auth, db } from '../firebase';
 import '../stylesheets/windo.css';
 
 const CreatePro = ({ toggleCreatePro }) => {
   const [formData, setFormData] = useState({
     fullName: '',
-    documentType: 'C.C',
-    documentNumber: '',
+    document: { type: 'C.C', number: '' },
     email: '',
     phone: '',
+    password: '',
+    confirmPassword: '',
     therapies: [],
   });
 
   const [errors, setErrors] = useState({});
-  const [imageFile, setImageFile] = useState(null);
-  const [cvFile, setCvFile] = useState(null);
-  const [certificationFiles, setCertificationFiles] = useState([]);
+  const [loading, setLoading] = useState(false);
+
+  const therapyOptions = ['Mental', 'Física', 'Ocupacional', 'Lenguaje'];
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
+    if (name === 'documentType' || name === 'documentNumber') {
+      setFormData((prev) => ({
+        ...prev,
+        document: {
+          ...prev.document,
+          [name === 'documentType' ? 'type' : 'number']: value,
+        },
+      }));
+    } else {
+      setFormData((prev) => ({ ...prev, [name]: value }));
+    }
   };
 
-  const handleTherapyToggle = (therapy) => {
+  const toggleTherapy = (therapy) => {
     setFormData((prev) => ({
       ...prev,
       therapies: prev.therapies.includes(therapy)
@@ -36,20 +46,26 @@ const CreatePro = ({ toggleCreatePro }) => {
     }));
   };
 
-  const handleFileChange = (e, setFile) => {
-    setFile(e.target.files[0]);
-  };
-
-  const handleMultipleFilesChange = (e) => {
-    setCertificationFiles(Array.from(e.target.files));
-  };
-
   const validateForm = () => {
     const validationErrors = {};
-    if (!formData.fullName.trim()) validationErrors.fullName = 'Nombre completo es obligatorio.';
-    if (!formData.documentNumber.trim()) validationErrors.documentNumber = 'Número de documento es obligatorio.';
-    if (!formData.email.match(/^[^\s@]+@[^\s@]+\.[^\s@]+$/)) validationErrors.email = 'Correo electrónico inválido.';
-    if (!formData.phone.trim()) validationErrors.phone = 'Número de teléfono es obligatorio.';
+    if (!formData.fullName.trim()) {
+      validationErrors.fullName = 'El nombre completo es obligatorio.';
+    }
+    if (!formData.username.trim()) {
+      validationErrors.username = 'El nombre de usuario es obligatorio.';
+    }
+    if (!formData.email.match(/^[^\s@]+@[^\s@]+\.[^\s@]+$/)) {
+      validationErrors.email = 'Por favor, ingresa un correo válido.';
+    }
+    if (!formData.document.number.trim()) {
+      validationErrors.documentNumber = 'El número de documento es obligatorio.';
+    }
+    if (formData.password.length < 6) {
+      validationErrors.password = 'La contraseña debe tener al menos 6 caracteres.';
+    }
+    if (formData.password !== formData.confirmPassword) {
+      validationErrors.confirmPassword = 'Las contraseñas no coinciden.';
+    }
     return validationErrors;
   };
 
@@ -61,54 +77,53 @@ const CreatePro = ({ toggleCreatePro }) => {
       return;
     }
 
+    setLoading(true);
     try {
-      const proId = `${formData.documentType}-${formData.documentNumber}`;
-      const proDocRef = doc(db, 'pros', proId);
-      const uploadFile = async (file, folder) => {
-        const storageRef = ref(storage, `${folder}/${proId}/${file.name}`);
-        await uploadBytes(storageRef, file);
-        return getDownloadURL(storageRef);
-      };
+      const userCredential = await createUserWithEmailAndPassword(
+        auth,
+        formData.email,
+        formData.password,
+      );
+      const { user } = userCredential;
 
-      const [imageUrl, cvUrl, certificationsUrls] = await Promise.all([
-        imageFile ? uploadFile(imageFile, 'images') : null,
-        cvFile ? uploadFile(cvFile, 'cv') : null,
-        Promise.all(certificationFiles.map((file) => uploadFile(file, 'certifications'))),
-      ]);
-
-      await setDoc(proDocRef, {
-        fullName: formData.fullName,
-        document: { type: formData.documentType, number: formData.documentNumber },
+      await setDoc(doc(db, 'pros', user.uid), {
+        uid: user.uid,
+        Nombre: formData.fullName,
+        username: formData.username,
+        Documento: formData.document,
         email: formData.email,
-        phone: formData.phone,
-        imageUrl,
-        cvUrl,
-        certificationsUrls,
-        therapies: formData.therapies,
+        telefono: formData.phone,
+        terapias: formData.therapies,
+        horarios: [],
       });
 
-      alert('Usuario Pro creado con éxito');
+      alert('Cuenta Pro creada con éxito');
+      setFormData({
+        fullName: '',
+        username: '',
+        document: { type: 'C.C', number: '' },
+        email: '',
+        phone: '',
+        password: '',
+        confirmPassword: '',
+        therapies: [],
+      });
       toggleCreatePro();
     } catch (error) {
-      console.error('Error creando el usuario Pro:', error);
-      alert('Hubo un error al crear el usuario Pro.');
+      console.error('Error creando Pro:', error);
+      alert('Hubo un error al crear la cuenta.');
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
-    <div className="Create-overlay">
-      <div className="Create-cont">
-        <form className="Create-body" onSubmit={handleSubmit}>
-          <div className="Create-title-cont">
-            <h1>Crear Usuario Pro</h1>
-            <div className="close-button" onClick={toggleCreatePro}>&times;</div>
-          </div>
-          <div className="Create-input-cont">
-            <h3>Foto:</h3>
-            <input type="file" accept="image/*" onChange={(e) => handleFileChange(e, setImageFile)} />
-          </div>
-          <div className="Create-input-cont">
-            <h3>Nombre Completo:</h3>
+    <div className="CreatePro-overlay">
+      <div className="CreatePro-cont">
+        <form className="CreatePro-body" onSubmit={handleSubmit}>
+          <h1>Crea tu cuenta Pro</h1>
+          <div className="CreatePro-input-cont">
+            <label>Nombre Completo:</label>
             <input
               type="text"
               name="fullName"
@@ -118,9 +133,24 @@ const CreatePro = ({ toggleCreatePro }) => {
             />
             {errors.fullName && <p className="error-text">{errors.fullName}</p>}
           </div>
-          <div className="Create-input-cont">
-            <h3>Documento:</h3>
-            <select name="documentType" value={formData.documentType} onChange={handleChange}>
+          <div className="CreatePro-input-cont">
+            <label>Nombre de Usuario:</label>
+            <input
+              type="text"
+              name="username"
+              value={formData.username}
+              onChange={handleChange}
+              className={errors.username ? 'input-error' : ''}
+            />
+            {errors.username && <p className="error-text">{errors.username}</p>}
+          </div>
+          <div className="CreatePro-input-cont">
+            <label>Documento:</label>
+            <select
+              name="documentType"
+              value={formData.document.type}
+              onChange={handleChange}
+            >
               <option value="C.C">C.C</option>
               <option value="C.E">C.E</option>
               <option value="Pasaporte">Pasaporte</option>
@@ -128,14 +158,17 @@ const CreatePro = ({ toggleCreatePro }) => {
             <input
               type="text"
               name="documentNumber"
-              value={formData.documentNumber}
+              value={formData.document.number}
               onChange={handleChange}
+              placeholder="Número"
               className={errors.documentNumber ? 'input-error' : ''}
             />
-            {errors.documentNumber && <p className="error-text">{errors.documentNumber}</p>}
+            {errors.documentNumber && (
+              <p className="error-text">{errors.documentNumber}</p>
+            )}
           </div>
-          <div className="Create-input-cont">
-            <h3>Email:</h3>
+          <div className="CreatePro-input-cont">
+            <label>Email:</label>
             <input
               type="email"
               name="email"
@@ -145,40 +178,60 @@ const CreatePro = ({ toggleCreatePro }) => {
             />
             {errors.email && <p className="error-text">{errors.email}</p>}
           </div>
-          <div className="Create-input-cont">
-            <h3>Teléfono:</h3>
+          <div className="CreatePro-input-cont">
+            <label>Teléfono:</label>
             <input
-              type="text"
+              type="number"
               name="phone"
               value={formData.phone}
               onChange={handleChange}
-              className={errors.phone ? 'input-error' : ''}
             />
-            {errors.phone && <p className="error-text">{errors.phone}</p>}
           </div>
-          <div className="Create-input-cont">
-            <h3>Subir Hoja de Vida:</h3>
-            <input type="file" accept=".pdf" onChange={(e) => handleFileChange(e, setCvFile)} />
+          <div className="CreatePro-input-cont">
+            <label>Contraseña:</label>
+            <input
+              type="password"
+              name="password"
+              value={formData.password}
+              onChange={handleChange}
+              className={errors.password ? 'input-error' : ''}
+            />
+            {errors.password && <p className="error-text">{errors.password}</p>}
           </div>
-          <div className="Create-input-cont">
-            <h3>Certificaciones:</h3>
-            <input type="file" accept=".pdf" multiple onChange={handleMultipleFilesChange} />
+          <div className="CreatePro-input-cont">
+            <label>Confirmar Contraseña:</label>
+            <input
+              type="password"
+              name="confirmPassword"
+              value={formData.confirmPassword}
+              onChange={handleChange}
+              className={errors.confirmPassword ? 'input-error' : ''}
+            />
+            {errors.confirmPassword && (
+              <p className="error-text">{errors.confirmPassword}</p>
+            )}
           </div>
-          <div className="Create-input-cont">
-            <h3>¿Con qué terapias vas a trabajar?</h3>
-            {['Lenguaje', 'Física', 'Mental', 'Ocupacional'].map((therapy) => (
-              <button
-                key={therapy}
-                type="button"
-                className={formData.therapies.includes(therapy) ? 'active' : ''}
-                onClick={() => handleTherapyToggle(therapy)}
-              >
-                {therapy}
-              </button>
-            ))}
+          <div className="CreatePro-therapies">
+            <label>¿Con qué terapias vas a trabajar?</label>
+            <div className="therapy-buttons">
+              {therapyOptions.map((therapy) => (
+                <button
+                  key={therapy}
+                  type="button"
+                  className={
+                    formData.therapies.includes(therapy) ? 'active' : ''
+                  }
+                  onClick={() => toggleTherapy(therapy)}
+                >
+                  {therapy}
+                </button>
+              ))}
+            </div>
           </div>
-          <div className="create-submit-cont">
-            <button type="submit"><h3>Confirmar</h3></button>
+          <div className="CreatePro-submit">
+            <button type="submit" disabled={loading}>
+              {loading ? 'Creando...' : 'Confirmar'}
+            </button>
           </div>
         </form>
       </div>

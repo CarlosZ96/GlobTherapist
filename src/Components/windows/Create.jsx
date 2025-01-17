@@ -7,7 +7,7 @@ import { doc, setDoc } from 'firebase/firestore';
 import '../../stylesheets/windo.css';
 import { auth, db } from '../../firebase';
 
-const Create = ({ toggleCreate }) => {
+const Create = ({ toggleCreate, toggleCreatePro }) => {
   const [formData, setFormData] = useState({
     email: '',
     phone: '',
@@ -19,9 +19,12 @@ const Create = ({ toggleCreate }) => {
   const [errors, setErrors] = useState({});
   const formRef = useRef();
   const [showMoreInfo, setShowMoreInfo] = useState(false);
-  const [setShowCreatePro] = useState(false);
 
-  const showCreatePro = () => setShowCreatePro(true);
+  const handleShowCreatePro = () => {
+    toggleCreate();
+    toggleCreatePro();
+    setShowMoreInfo(!showMoreInfo);
+  };
 
   const validateForm = () => {
     const validationErrors = {};
@@ -62,11 +65,7 @@ const Create = ({ toggleCreate }) => {
 
       await setDoc(doc(db, 'users', user.uid), {
         uid: user.uid,
-        Nombre: formData.userName,
-        Documento: {
-          tipo: 'DNI',
-          numero: '00000000',
-        },
+        username: formData.userName,
         email: formData.email,
         telefono: formData.phone,
         Citas: [],
@@ -90,11 +89,13 @@ const Create = ({ toggleCreate }) => {
 
   const handleClose = () => {
     toggleCreate();
+    setShowMoreInfo(!showMoreInfo);
     setFormData({
       email: '',
       phone: '',
       userName: '',
       password: '',
+      confirmPassword: '',
     });
     setErrors('');
   };
@@ -190,14 +191,7 @@ const Create = ({ toggleCreate }) => {
                 Si eres profesional y te gustaría trabajar con nosotros, puedes
                 registrarte y brindar tus servicios de terapias en línea.
               </p>
-              <button
-                type="button"
-                onClick={() => {
-                  setShowMoreInfo(false);
-                  toggleCreate();
-                  showCreatePro();
-                }}
-              >
+              <button type="button" onClick={handleShowCreatePro}>
                 Crear Cuenta Pro
               </button>
             </div>
@@ -210,6 +204,7 @@ const Create = ({ toggleCreate }) => {
 
 Create.propTypes = {
   toggleCreate: PropTypes.func.isRequired,
+  toggleCreatePro: PropTypes.func.isRequired,
 };
 
 export default Create;
