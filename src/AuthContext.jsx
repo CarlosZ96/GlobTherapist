@@ -17,6 +17,7 @@ export const AuthProvider = ({ children }) => {
   const [currentUser, setCurrentUser] = useState(null);
   const [userData, setUserData] = useState(null);
   const [pros, setPros] = useState([]);
+  const [currentPro, setCurrentPro] = useState(null);
   const [isAdmin, setIsAdmin] = useState(false);
   const [loading, setLoading] = useState(true);
 
@@ -33,11 +34,16 @@ export const AuthProvider = ({ children }) => {
           } else {
             console.error('No user data found in Firestore');
           }
+          const proDoc = await getDoc(doc(db, 'pros', user.uid));
+          if (proDoc.exists()) {
+            setCurrentPro(proDoc.data());
+          }
         } catch (error) {
           console.error('Error fetching user data: ', error);
         }
       } else {
         setUserData(null);
+        setCurrentPro(null);
         setIsAdmin(false);
       }
       setLoading(false);
@@ -66,11 +72,12 @@ export const AuthProvider = ({ children }) => {
   const value = useMemo(() => ({
     currentUser,
     userData,
+    currentPro,
     pros,
     isAdmin,
     login,
     logout,
-  }), [currentUser, userData, pros, isAdmin]);
+  }), [currentUser, userData, currentPro, pros, isAdmin]);
 
   return (
     <AuthContext.Provider value={value}>

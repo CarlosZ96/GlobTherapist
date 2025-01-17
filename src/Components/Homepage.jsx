@@ -8,7 +8,9 @@ import CreatePro from './CreatePro';
 import { useAuth } from '../AuthContext';
 
 const Homepage = () => {
-  const { currentUser, logout, userData } = useAuth();
+  const {
+    currentUser, logout, userData, currentPro,
+  } = useAuth();
   const [showLogin, setShowLogin] = useState(false);
   const [showCreate, setShowCreate] = useState(false);
   const [showCreatePro, setShowCreatePro] = useState(false);
@@ -46,9 +48,8 @@ const Homepage = () => {
           <div className="Log-Btn-Cont">
             <div>
               <h3>
-                {' '}
-                {userData?.username || 'Usuario'}
-                {console.log(userData?.username)}
+                {currentPro?.username || userData?.username || 'Usuario'}
+                {console.log(currentPro?.username || userData?.username)}
               </h3>
             </div>
             <button type="button" className="Log-Btn" onClick={logout}>
