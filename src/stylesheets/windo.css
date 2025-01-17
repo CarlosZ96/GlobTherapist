@@ -14,22 +14,42 @@
     top: 8%;
     z-index: 101;
     width: 33vw;
-    height: 59vh;
+    height: max-content;
     border: 3px #01268d solid;
     background-color: #fff;
 }
 
 .Create-title-cont {
+    display: flex;
     width: 100%;
     border-bottom: #01268d 2px solid;
 }
 
 .Create-title-cont h1 {
+    width: 86%;
     color: #2B3A67;
     font-family: "Itim", serif;
     font-weight: 300;
     font-style: normal;
     margin: 0;
+}
+
+.close-button {
+    width: 14%;
+    font-size: 3.5vw;
+    color: #01268d;
+    font-family: "Itim", serif;
+    font-weight: 300;
+    font-style: normal;
+}
+
+.close-buttons {
+    width: 14%;
+    font-size: 3.5vw;
+    color: #fff;
+    font-family: "Itim", serif;
+    font-weight: 300;
+    font-style: normal;
 }
 
 .Create-input-cont {
@@ -129,7 +149,7 @@
     height: 100%;
 }
 
-.info-popup p{
+.info-popup p {
     width: 90%;
     font-size: 2vw;
     color: #fff;
