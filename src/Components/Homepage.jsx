@@ -2,15 +2,15 @@ import React, { useState } from 'react';
 import '../stylesheets/homepage.css';
 import '../stylesheets/windo.css';
 import Globody from './Globody';
+import Admin from './Admin';
+import ProSpace from './ProSpace';
 import Login from './windows/login';
 import Create from './windows/Create';
 import CreatePro from './CreatePro';
 import { useAuth } from '../AuthContext';
 
 const Homepage = () => {
-  const {
-    currentUser, logout, userData, currentPro,
-  } = useAuth();
+  const { currentUser, logout, userData, currentPro } = useAuth();
   const [showLogin, setShowLogin] = useState(false);
   const [showCreate, setShowCreate] = useState(false);
   const [showCreatePro, setShowCreatePro] = useState(false);
@@ -25,6 +25,16 @@ const Homepage = () => {
 
   const toggleCreatePro = () => {
     setShowCreatePro((prev) => !prev);
+  };
+
+  const renderContent = () => {
+    if (currentPro) {
+      return <ProSpace />;
+    }
+    if (userData?.role === 'admin') {
+      return <Admin />;
+    }
+    return <Globody />;
   };
 
   return (
@@ -58,7 +68,7 @@ const Homepage = () => {
           </div>
         )}
       </header>
-      <Globody />
+      {renderContent()}
       <div style={{ display: showLogin ? 'block' : 'none' }}>
         <Login toggleLogin={toggleLogin} />
       </div>
