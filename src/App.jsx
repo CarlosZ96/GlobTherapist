@@ -1,6 +1,6 @@
 import React from 'react';
 import { Route, Routes } from 'react-router-dom';
-import CreatePro from './Components/CreatePro';
+import CalendarWithToggle from './Components/CalendarWithToggle';
 import './App.css';
 import Mainpage from './Components/Homepage';
 
@@ -9,7 +9,7 @@ function App() {
     <div className="App">
       <Routes>
         <Route path="/" element={<Mainpage />} />
-        <Route path="/ca" element={<CreatePro />} />
+        <Route path="/ca" element={<CalendarWithToggle />} />
       </Routes>
     </div>
   );

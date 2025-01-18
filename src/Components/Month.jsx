@@ -1,7 +1,8 @@
+/* eslint-disable no-shadow */
 /* eslint-disable react/no-array-index-key */
 import React, { useEffect, useState } from 'react';
 import {
-  doc, setDoc, deleteDoc, collection, getDocs,
+  doc, setDoc, deleteDoc, collection, getDocs, getDoc,
 } from 'firebase/firestore';
 import { db } from '../firebase';
 import '../stylesheets/month.css';
@@ -26,29 +27,41 @@ const Month = () => {
   };
 
   const saveMonthToFirebase = async (monthName, year, daysInMonth) => {
-    const daysArray = Array.from({ length: daysInMonth }, (_, i) => ({
-      date: i + 1,
-      horario: [],
-    }));
+    const docRef = doc(db, monthName, 'days');
+    const docSnap = await getDoc(docRef);
 
-    await setDoc(doc(db, monthName, 'days'), { days: daysArray });
-    setDays(daysArray);
+    if (!docSnap.exists()) {
+      const daysArray = Array.from({ length: daysInMonth }, (_, i) => ({
+        date: i + 1,
+        horario: [],
+      }));
+      await setDoc(docRef, { days: daysArray });
+      setDays(daysArray);
+    } else {
+      setDays(docSnap.data().days);
+    }
   };
 
   const deleteOldDays = async (monthName, currentDay) => {
     const docRef = doc(db, monthName, 'days');
-    const docSnapshot = await getDocs(collection(db, monthName));
-    const data = docSnapshot.docs[0]?.data();
+    const docSnap = await getDoc(docRef);
 
-    if (data) {
-      const updatedDays = data.days.filter((day) => day.date >= currentDay);
+    if (docSnap.exists()) {
+      const updatedDays = docSnap.data().days.filter((day) => day.date >= currentDay);
       await setDoc(docRef, { days: updatedDays });
       setDays(updatedDays);
     }
   };
 
+  const deleteCollection = async (collectionName) => {
+    const collectionRef = collection(db, collectionName);
+    const querySnapshot = await getDocs(collectionRef);
+    const deletePromises = querySnapshot.docs.map((doc) => deleteDoc(doc.ref));
+    await Promise.all(deletePromises);
+  };
+
   const handleNextMonth = async (currentMonthName, nextMonthName, year) => {
-    await deleteDoc(collection(db, currentMonthName));
+    await deleteCollection(currentMonthName);
     const daysInNextMonth = getDaysInMonth(year, new Date().getMonth() + 1);
     await saveMonthToFirebase(nextMonthName, year, daysInNextMonth);
   };
