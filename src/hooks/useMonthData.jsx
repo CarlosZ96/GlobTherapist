@@ -13,8 +13,8 @@ const getCurrentMonthDetails = () => {
 };
 
 const getStartDayOfMonth = (year, month) => {
-  const firstDay = new Date(year, month, 1).getDay(); // 0 = Domingo, 6 = Sábado
-  return firstDay === 0 ? 6 : firstDay - 1; // Ajustar para que Lunes sea el primer día (0)
+  const firstDay = new Date(year, month, 1).getDay();
+  return firstDay === 0 ? 6 : firstDay - 1;
 };
 
 const useMonthData = () => {

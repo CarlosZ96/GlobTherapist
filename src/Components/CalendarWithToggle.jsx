@@ -30,10 +30,11 @@ const CalendarWithToggle = () => {
           <button
             type="button"
             key={index}
-            className={`calendar-day ${day.active ? 'active' : 'inactive'}`}
-            onClick={() => toggleDayStatus(index)}
+            className={`calendar-day ${day && day.active ? 'active' : 'inactive'}`}
+            onClick={() => day && toggleDayStatus(index)}
+            disabled={!day}
           >
-            {day.date}
+            {day ? day.date : ''}
           </button>
         ))}
       </div>
