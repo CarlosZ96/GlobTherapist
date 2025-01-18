@@ -29,8 +29,6 @@ const Month = () => {
     const daysArray = Array.from({ length: daysInMonth }, (_, i) => ({
       date: i + 1,
       horario: [],
-      proAsignado: '',
-      horas: '',
     }));
 
     await setDoc(doc(db, monthName, 'days'), { days: daysArray });

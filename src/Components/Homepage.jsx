@@ -10,7 +10,9 @@ import CreatePro from './CreatePro';
 import { useAuth } from '../AuthContext';
 
 const Homepage = () => {
-  const { currentUser, logout, userData, currentPro } = useAuth();
+  const {
+    currentUser, logout, userData, currentPro,
+  } = useAuth();
   const [showLogin, setShowLogin] = useState(false);
   const [showCreate, setShowCreate] = useState(false);
   const [showCreatePro, setShowCreatePro] = useState(false);
