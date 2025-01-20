@@ -90,7 +90,7 @@
 .calendar-day.has-day:hover {
     outline: 2px solid #2b3e9d;
     outline-offset: 3px;
-    color: #38dde3;
+    color: #fff;
     background-color: #2b3e9d;
     cursor: pointer;
 }
@@ -105,7 +105,6 @@
 .calendar-day:active {
     outline: 3px solid #2b3e9d;
     outline-offset: 5px;
-    background-color: #2b3e9d;
     color: #fff;
 }
 
@@ -113,13 +112,13 @@
     color: red;
     font-size: 0.9rem;
     margin-top: 5px;
-  }
-  
-  .input-error {
+}
+
+.input-error {
     border: 1px solid red;
-  }
-  
-  .Create-overlay {
+}
+
+.Create-overlay {
     position: fixed;
     top: 0;
     left: 0;
@@ -129,9 +128,9 @@
     display: flex;
     align-items: center;
     justify-content: center;
-  }
+}
 
-  .Login-overlay {
+.Login-overlay {
     position: fixed;
     top: 0;
     left: 0;
@@ -141,4 +140,26 @@
     display: flex;
     justify-content: center;
     align-items: center;
-  }
+}
+
+.calendar-day {
+    font-size: 2vw;
+}
+
+.calendar-day:hover {
+    outline: 3px solid #2b3e9d;
+    outline-offset: 5px;
+    color: #fff;
+}
+
+.inactive {
+
+    background-color: #7C95A6;
+    color: #fff;
+
+}
+
+.active {
+    background-color: #2b3e9d;
+    color: #38DDE3;
+}
