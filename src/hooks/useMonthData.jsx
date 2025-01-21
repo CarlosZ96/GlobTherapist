@@ -3,8 +3,9 @@ import { useState, useEffect } from 'react';
 import { doc, getDoc, setDoc } from 'firebase/firestore';
 import { db } from '../firebase';
 
-const getCurrentMonthDetails = () => {
+const getCurrentMonthDetails = (offset = 0) => {
   const now = new Date();
+  now.setMonth(now.getMonth() + offset);
   const year = now.getFullYear();
   const month = now.getMonth();
   const monthName = now.toLocaleString('default', { month: 'long' });
@@ -18,22 +19,28 @@ const getStartDayOfMonth = (year, month) => {
 };
 
 const useMonthData = () => {
-  const { year, month, monthName } = getCurrentMonthDetails();
+  const [monthOffset, setMonthOffset] = useState(0);
+  const { year, month, monthName } = getCurrentMonthDetails(monthOffset);
   const [days, setDays] = useState([]);
   const [loading, setLoading] = useState(true);
   const startDay = getStartDayOfMonth(year, month);
 
   useEffect(() => {
     const fetchDays = async () => {
+      setLoading(true);
       try {
-        const docRef = doc(db, monthName, 'days');
+        const docRef = doc(db, 'days', monthName);
         const docSnap = await getDoc(docRef);
+
         if (docSnap.exists()) {
-          const fetchedDays = docSnap.data().days;
+          const fetchedDays = docSnap.data().days.map((day, index) => ({
+            ...day,
+            active: index >= 20 ? day.active : false, // Desactiva días anteriores al 21
+          }));
           const paddedDays = Array(startDay).fill(null).concat(fetchedDays);
           setDays(paddedDays);
         } else {
-          console.warn(`No se encontró la colección para ${monthName}`);
+          console.warn(`No se encontró el documento para ${monthName}`);
         }
       } catch (error) {
         console.error('Error obteniendo datos de Firestore:', error);
@@ -49,14 +56,18 @@ const useMonthData = () => {
     setDays(updatedDays);
 
     try {
-      await setDoc(doc(db, monthName, 'days'), { days: updatedDays.filter(Boolean) });
+      await setDoc(doc(db, 'days', monthName), { days: updatedDays.filter(Boolean) });
     } catch (error) {
       console.error('Error actualizando Firestore:', error);
     }
   };
 
+  const changeMonth = (offset) => {
+    setMonthOffset((prev) => prev + offset);
+  };
+
   return {
-    days, loading, toggleDayStatus, monthName,
+    days, loading, toggleDayStatus, monthName, changeMonth, monthOffset,
   };
 };
 

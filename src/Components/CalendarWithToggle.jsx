@@ -5,7 +5,7 @@ import '../stylesheets/month.css';
 
 const CalendarWithToggle = () => {
   const {
-    days, loading, toggleDayStatus, monthName,
+    days, loading, toggleDayStatus, monthName, changeMonth, monthOffset,
   } = useMonthData();
   const daysOfWeek = ['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom'];
 
@@ -15,7 +15,15 @@ const CalendarWithToggle = () => {
 
   return (
     <div className="calendar-container">
-      <h2 className="calendar-title">{monthName}</h2>
+      <div className="calendar-header">
+        {monthOffset > -1 && (
+          <button type="button" onClick={() => changeMonth(-1)}>← Mes Anterior</button>
+        )}
+        <h2 className="calendar-title">{monthName}</h2>
+        {monthOffset < 1 && (
+          <button type="button" onClick={() => changeMonth(1)}>Mes Siguiente →</button>
+        )}
+      </div>
       <hr className="blue-line" />
       <div className="calendar-week-cont">
         {daysOfWeek.map((day, index) => (
@@ -30,7 +38,7 @@ const CalendarWithToggle = () => {
           <button
             type="button"
             key={index}
-            className={`calendar-day ${day && day.active ? 'active' : 'inactive'}`}
+            className={`calendar-day ${day?.active ? 'active' : 'inactive'}`}
             onClick={() => day && toggleDayStatus(index)}
             disabled={!day}
           >
