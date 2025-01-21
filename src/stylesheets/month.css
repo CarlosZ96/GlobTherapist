@@ -25,7 +25,7 @@
     background-color: #2b3a67;
 }
 
-.calendar-grid {
+.date-calendar-grid {
     display: grid;
     grid-template-columns: repeat(7, 1fr);
     text-align: center;
@@ -162,4 +162,8 @@
 .active {
     background-color: #2b3e9d;
     color: #38DDE3;
+}
+
+.pro-img-def {
+    background-color: #030f32;
 }

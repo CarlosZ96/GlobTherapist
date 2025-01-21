@@ -1,5 +1,4 @@
 import React from 'react';
-import Calendar from './Calendar';
 import '../stylesheets/Therapy.css';
 
 const Therapy = () => {
@@ -74,7 +73,6 @@ const Therapy = () => {
         <div className="Ask-Therapy-txt">
           <h3>¿Que dia y a que horas quieres tu cita?:</h3>
         </div>
-        <Calendar />
       </form>
     </div>
   );
