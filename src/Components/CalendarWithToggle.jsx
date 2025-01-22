@@ -40,7 +40,7 @@ const CalendarWithToggle = () => {
             <button
               type="button"
               key={index}
-              className={`date-calendar-day ${day?.active ? 'active' : 'inactive'}`}
+              className={`calendar-day ${day?.active ? 'active' : 'inactive'}`}
               onClick={() => day && toggleDayStatus(index)}
               disabled={!day}
             >
