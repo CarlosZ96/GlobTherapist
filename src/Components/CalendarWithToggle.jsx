@@ -4,7 +4,7 @@ import useMonthData from '../hooks/useMonthData';
 import User from '../img/user.png';
 import '../stylesheets/month.css';
 
-const CalendarWithToggle = () => {
+const Calendar = () => {
   const {
     days, loading, toggleDayStatus, monthName, changeMonth, monthOffset,
   } = useMonthData();
@@ -90,4 +90,4 @@ const CalendarWithToggle = () => {
   );
 };
 
-export default CalendarWithToggle;
+export default Calendar;

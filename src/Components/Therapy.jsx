@@ -1,4 +1,5 @@
 import React from 'react';
+import Calendar from './CalendarWithToggle';
 import '../stylesheets/Therapy.css';
 
 const Therapy = () => {
@@ -48,32 +49,11 @@ const Therapy = () => {
           <p className="Therapy-txt-field">...</p>
         </div>
         <hr className="white-line" />
-        <div className="Ask-Therapy-pros-cont">
-          <div className="Ask-Therapy-pro-cont">
-            <img className="Ask-Therapy-pro-img" src="" alt="" />
-            <h4 className="Ask-Therapy-pro-name">name</h4>
-          </div>
-          <div className="Ask-Therapy-pro-cont">
-            <img className="Ask-Therapy-pro-img" src="" alt="" />
-            <h4 className="Ask-Therapy-pro-name">name</h4>
-          </div>
-          <div className="Ask-Therapy-pro-cont">
-            <img className="Ask-Therapy-pro-img" src="" alt="" />
-            <h4 className="Ask-Therapy-pro-name">name</h4>
-          </div>
-          <div className="Ask-Therapy-pro-cont">
-            <img className="Ask-Therapy-pro-img" src="" alt="" />
-            <h4 className="Ask-Therapy-pro-name">name</h4>
-          </div>
-          <div className="Ask-Therapy-pro-cont">
-            <img className="Ask-Therapy-pro-img" src="" alt="" />
-            <h4 className="Ask-Therapy-pro-name">name</h4>
-          </div>
-        </div>
         <div className="Ask-Therapy-txt">
           <h3>¿Que dia y a que horas quieres tu cita?:</h3>
         </div>
       </form>
+      <Calendar />
     </div>
   );
 };
