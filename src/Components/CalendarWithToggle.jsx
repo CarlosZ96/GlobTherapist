@@ -16,26 +16,26 @@ const CalendarWithToggle = () => {
 
   return (
     <div className="DynamiCanlendar-cont">
-      <div className="Calendar-cont">
-        <div className="date-calendar-header">
-          {monthOffset > -1 && (
-            <button type="button" onClick={() => changeMonth(-1)}>← Mes Anterior</button>
-          )}
-          <h2 className="date-calendar-title">{monthName}</h2>
-          {monthOffset < 1 && (
-            <button type="button" onClick={() => changeMonth(1)}>Mes Siguiente →</button>
-          )}
-        </div>
-        <hr className="date-blue-line" />
-        <div className="date-calendar-week-cont">
-          {daysOfWeek.map((day, index) => (
-            <div key={index} className="date-calendar-day-header">
-              {day}
-            </div>
-          ))}
-        </div>
-        <hr className="date-blue-line" />
-        <div className="date-calendar-grid">
+      <div className="calendar-month-cont">
+        {monthOffset > -1 && (
+          <button className="calendar-month-btn" type="button" onClick={() => changeMonth(-1)}>←</button>
+        )}
+        <h2 className="calendar-title">{monthName}</h2>
+        {monthOffset < 1 && (
+          <button className="calendar-month-btn" type="button" onClick={() => changeMonth(1)}>→</button>
+        )}
+      </div>
+      <hr className="date-blue-line" />
+      <div className="calendar-week-cont">
+        {daysOfWeek.map((day, index) => (
+          <div key={index} className="calendar-day-header">
+            {day}
+          </div>
+        ))}
+      </div>
+      <hr className="date-blue-line" />
+      <div className="Choose-Day-Cont">
+        <div className="Calendar-cont">
           {days.map((day, index) => (
             <button
               type="button"
@@ -48,37 +48,39 @@ const CalendarWithToggle = () => {
             </button>
           ))}
         </div>
-      </div>
-      <div className="Choose-Day-Cont">
-        <h3 className="Choose-Day-txt">Elige el día de tu valoración.</h3>
-        <div className="Dispos-cont">
-          <div className="Dispo-cont">
-            <h3>Dispo</h3>
-            <div className="active" />
-          </div>
-          <div className="Dispo-cont">
-            <h3>No Dispo</h3>
-            <div className="inactive " />
+        <div className="Choose-Day-btns-cont">
+          <h3 className="Choose-Day-txt">Elige el día de tu valoración.</h3>
+          <div className="Dispos-cont">
+            <div className="Dispo-cont">
+              <h3>Dispo</h3>
+              <div className="Dispos-btn" />
+            </div>
+            <div className="Dispo-cont">
+              <h3>No Dispo</h3>
+              <div className="Dispos-btn" />
+            </div>
           </div>
         </div>
-        <hr className="blue-line" />
       </div>
+      <hr className="date-blue-line" />
       <div className="Hours-cont">
-        <h3>¿A que horas?</h3>
+        <div className="Hours-btn-cont">
+          <button className="See-Hours" type="button"><h3>Ver horarios</h3></button>
+        </div>
         <div className="Hours-Users">
-          <button type="button"><h4>7:00am-7:40am</h4></button>
+          <button className="Hour-btn" type="button"><h4>7:00am-7:40am</h4></button>
         </div>
-        <div className="Hours-btn-cont">
-          <button type="button"><h3>Ver horarios</h3></button>
-        </div>
-        <hr className="blue-line" />
+        <h3>¿A que horas?</h3>
       </div>
+      <hr className="date-blue-line" />
       <div className="Pros-cont">
-        <div className="Hours-btn-cont">
+        <div className="Pros-btn-cont">
           <button type="button"><h3>Ver pros</h3></button>
         </div>
         <div className="pro-img-def">
-          <img src={User} alt="user-image" className="pro-img" />
+          <div className="user-image-comt">
+            <img src={User} alt="user-image" className="pro-img" />
+          </div>
         </div>
       </div>
       <div className="DynamiCanlendar-btn-cont">
