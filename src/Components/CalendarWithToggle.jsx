@@ -1,3 +1,5 @@
+/* eslint-disable no-await-in-loop */
+/* eslint-disable no-restricted-syntax */
 /* eslint-disable no-shadow */
 /* eslint-disable no-unused-vars */
 /* eslint-disable max-len */
@@ -5,6 +7,8 @@
 /* eslint-disable react/no-array-index-key */
 import React, { useState } from 'react';
 import PropTypes from 'prop-types';
+import { doc, getDoc, updateDoc } from 'firebase/firestore';
+import { db } from '../firebase';
 import useMonthData from '../hooks/useMonthData';
 import User from '../img/user.png';
 import '../stylesheets/month.css';
@@ -33,15 +37,41 @@ const Calendar = ({ collection }) => {
     setActiveHours((prev) => (prev.includes(hour) ? prev.filter((h) => h !== hour) : [...prev, hour]));
   };
 
-  const handleConfirmHours = () => {
-    if (collection === 'pros') {
-      const activeDays = days
-        .map((day, index) => (day?.active ? day.date : null))
-        .filter((day) => day !== null);
-
-      console.log('Mes actual:', monthName);
-      console.log('Días activos:', activeDays);
-      console.log('Horarios activos:', activeHours);
+  const handleConfirmHours = async () => {
+    if (collection !== 'pros') return;
+    const activeDaysData = days.filter((day) => day?.active).map((days) => days.date);
+    if (activeDaysData.length === 0 || activeHours.length === 0) {
+      console.log('No hay días u horarios seleccionados.');
+      return;
+    }
+    const monthRef = doc(db, 'days', monthName);
+    try {
+      const monthSnap = await getDoc(monthRef);
+      if (!monthSnap.exists()) {
+        console.log('El mes no existe en la base de datos.');
+        return;
+      }
+      const monthData = monthSnap.data();
+      if (!monthData.days || !Array.isArray(monthData.days)) {
+        console.log('No se encontró el array "day" en la colección.');
+        return;
+      }
+      const updatedDays = monthData.days.map((dayEntry) => {
+        if (activeDaysData.includes(dayEntry.date)) {
+          const updatedDay = { ...dayEntry };
+          activeHours.forEach((hour) => {
+            if (!updatedDay[hour]) {
+              updatedDay[hour] = [];
+            }
+          });
+          return updatedDay;
+        }
+        return dayEntry;
+      });
+      await updateDoc(monthRef, { days: updatedDays });
+      console.log('Horarios confirmados y guardados en Firebase.');
+    } catch (error) {
+      console.error('Error al guardar horarios:', error);
     }
   };
 
