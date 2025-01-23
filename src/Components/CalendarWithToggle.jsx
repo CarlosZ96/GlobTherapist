@@ -36,7 +36,7 @@ const Calendar = ({ collection }) => {
   const handleConfirmHours = () => {
     if (collection === 'pros') {
       const activeDays = days
-        .map((day, index) => (day?.active ? day.date : null)) // Día activo basado en `day.date`
+        .map((day, index) => (day?.active ? day.date : null))
         .filter((day) => day !== null);
 
       console.log('Mes actual:', monthName);
@@ -45,13 +45,12 @@ const Calendar = ({ collection }) => {
     }
   };
 
-  // Generar horarios dinámicos para 'pros'
   const generateHourButtons = () => {
     const hours = [];
-    let startTime = 7 * 60; // 7:00am en minutos
-    const endTime = 22 * 60; // 10:00pm en minutos
+    let startTime = 7 * 60;
+    const endTime = 22 * 60;
     while (startTime < endTime) {
-      const nextTime = startTime + 40; // Incrementar a la siguiente hora con 40 minutos fijos
+      const nextTime = startTime + 40;
       const formatTime = (minutes) => {
         const hours = Math.floor(minutes / 60);
         const mins = minutes % 60;
@@ -59,12 +58,10 @@ const Calendar = ({ collection }) => {
         const formattedHour = hours > 12 ? hours - 12 : hours;
         return `${formattedHour}:${mins === 0 ? '00' : mins}${period}`;
       };
-      // Generar intervalos de hora: 7:00am-7:40am, 8:00am-8:40am, etc.
       const startHour = formatTime(startTime);
       const endHour = formatTime(nextTime);
       hours.push(`${startHour}-${endHour}`);
-      // Avanzar a la siguiente hora
-      startTime = (Math.floor(startTime / 60) + 1) * 60; // Siguiente hora en minutos
+      startTime = (Math.floor(startTime / 60) + 1) * 60;
     }
     return hours;
   };
