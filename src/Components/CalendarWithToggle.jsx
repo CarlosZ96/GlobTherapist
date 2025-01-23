@@ -1,18 +1,29 @@
+/* eslint-disable no-nested-ternary */
 /* eslint-disable react/no-array-index-key */
-import React from 'react';
+import React, { useState } from 'react';
+import PropTypes from 'prop-types';
 import useMonthData from '../hooks/useMonthData';
 import User from '../img/user.png';
 import '../stylesheets/month.css';
 
-const Calendar = () => {
+const Calendar = ({ collection }) => {
   const {
     days, loading, toggleDayStatus, monthName, changeMonth, monthOffset,
   } = useMonthData();
   const daysOfWeek = ['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom'];
+  const [selectedDay, setSelectedDay] = useState(null);
 
   if (loading) {
     return <div>Loading...</div>;
   }
+
+  const handleDayClick = (index) => {
+    if (collection === 'users') {
+      setSelectedDay(index);
+    } else if (collection === 'pros') {
+      toggleDayStatus(index);
+    }
+  };
 
   return (
     <div className="DynamiCanlendar-cont">
@@ -40,8 +51,15 @@ const Calendar = () => {
             <button
               type="button"
               key={index}
-              className={`calendar-day ${day?.active ? 'active' : 'inactive'}`}
-              onClick={() => day && toggleDayStatus(index)}
+              className={`calendar-day ${collection === 'users'
+                ? selectedDay === index
+                  ? 'active'
+                  : 'inactive'
+                : day?.active
+                  ? 'active'
+                  : 'inactive'
+                }`}
+              onClick={() => handleDayClick(index)}
               disabled={!day}
             >
               {day ? day.date : ''}
@@ -49,7 +67,11 @@ const Calendar = () => {
           ))}
         </div>
         <div className="Choose-Day-btns-cont">
-          <h3 className="Choose-Day-txt">Elige el día de tu valoración.</h3>
+          <h3 className="Choose-Day-txt">
+            {collection === 'users'
+              ? 'Elige el día de tu valoración.'
+              : '¿Qué días estarás disponible para trabajar?'}
+          </h3>
           <div className="Dispos-cont">
             <div className="Dispo-cont">
               <h3>Dispo</h3>
@@ -88,6 +110,10 @@ const Calendar = () => {
       </div>
     </div>
   );
+};
+
+Calendar.propTypes = {
+  collection: PropTypes.oneOf(['users', 'pros']).isRequired,
 };
 
 export default Calendar;

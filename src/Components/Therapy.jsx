@@ -1,8 +1,13 @@
+/* eslint-disable no-unused-vars */
 import React from 'react';
+import { collection } from 'firebase/firestore';
+import { db } from '../firebase';
 import Calendar from './CalendarWithToggle';
 import '../stylesheets/Therapy.css';
 
 const Therapy = () => {
+  const usersCollection = collection(db, 'users');
+
   return (
     <div className="Therapy-body">
       <div className="Therapy-title-cont">
@@ -53,7 +58,7 @@ const Therapy = () => {
           <h3>¿Que dia y a que horas quieres tu cita?:</h3>
         </div>
       </form>
-      <Calendar />
+      <Calendar collection="users" />
     </div>
   );
 };
