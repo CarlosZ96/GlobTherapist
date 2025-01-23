@@ -9,7 +9,6 @@ const ProSpace = () => {
   const usersCollection = collection(db, 'pros');
   return (
     <div>
-      <h1>Prospace</h1>
       <Calendar collection="pros" />
     </div>
   );

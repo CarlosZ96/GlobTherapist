@@ -1,3 +1,6 @@
+/* eslint-disable no-shadow */
+/* eslint-disable no-unused-vars */
+/* eslint-disable max-len */
 /* eslint-disable no-nested-ternary */
 /* eslint-disable react/no-array-index-key */
 import React, { useState } from 'react';
@@ -12,6 +15,7 @@ const Calendar = ({ collection }) => {
   } = useMonthData();
   const daysOfWeek = ['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom'];
   const [selectedDay, setSelectedDay] = useState(null);
+  const [activeHours, setActiveHours] = useState([]);
 
   if (loading) {
     return <div>Loading...</div>;
@@ -25,15 +29,67 @@ const Calendar = ({ collection }) => {
     }
   };
 
+  const handleHourClick = (hour) => {
+    setActiveHours((prev) => (prev.includes(hour) ? prev.filter((h) => h !== hour) : [...prev, hour]));
+  };
+
+  const handleConfirmHours = () => {
+    if (collection === 'pros') {
+      const activeDays = days
+        .map((day, index) => (day?.active ? day.date : null)) // Día activo basado en `day.date`
+        .filter((day) => day !== null);
+
+      console.log('Mes actual:', monthName);
+      console.log('Días activos:', activeDays);
+      console.log('Horarios activos:', activeHours);
+    }
+  };
+
+  // Generar horarios dinámicos para 'pros'
+  const generateHourButtons = () => {
+    const hours = [];
+    let startTime = 7 * 60; // 7:00am en minutos
+    const endTime = 22 * 60; // 10:00pm en minutos
+    while (startTime < endTime) {
+      const nextTime = startTime + 40; // Incrementar a la siguiente hora con 40 minutos fijos
+      const formatTime = (minutes) => {
+        const hours = Math.floor(minutes / 60);
+        const mins = minutes % 60;
+        const period = hours >= 12 ? 'pm' : 'am';
+        const formattedHour = hours > 12 ? hours - 12 : hours;
+        return `${formattedHour}:${mins === 0 ? '00' : mins}${period}`;
+      };
+      // Generar intervalos de hora: 7:00am-7:40am, 8:00am-8:40am, etc.
+      const startHour = formatTime(startTime);
+      const endHour = formatTime(nextTime);
+      hours.push(`${startHour}-${endHour}`);
+      // Avanzar a la siguiente hora
+      startTime = (Math.floor(startTime / 60) + 1) * 60; // Siguiente hora en minutos
+    }
+    return hours;
+  };
+
   return (
     <div className="DynamiCanlendar-cont">
       <div className="calendar-month-cont">
         {monthOffset > -1 && (
-          <button className="calendar-month-btn" type="button" onClick={() => changeMonth(-1)}>←</button>
+          <button
+            className="calendar-month-btn"
+            type="button"
+            onClick={() => changeMonth(-1)}
+          >
+            ←
+          </button>
         )}
         <h2 className="calendar-title">{monthName}</h2>
         {monthOffset < 1 && (
-          <button className="calendar-month-btn" type="button" onClick={() => changeMonth(1)}>→</button>
+          <button
+            className="calendar-month-btn"
+            type="button"
+            onClick={() => changeMonth(1)}
+          >
+            →
+          </button>
         )}
       </div>
       <hr className="date-blue-line" />
@@ -87,26 +143,44 @@ const Calendar = ({ collection }) => {
       <hr className="date-blue-line" />
       <div className="Hours-cont">
         <div className="Hours-btn-cont">
-          <button className="See-Hours" type="button"><h3>Ver horarios</h3></button>
+          <button className="See-Hours" type="button" onClick={handleConfirmHours}>
+            <h3>{collection === 'pros' ? 'Confirmar mis horarios' : 'Ver horarios'}</h3>
+          </button>
         </div>
         <div className="Hours-Users">
-          <button className="Hour-btn" type="button"><h4>7:00am-7:40am</h4></button>
+          {generateHourButtons().map((timeSlot, index) => (
+            <button
+              key={index}
+              className={`Hour-btn ${activeHours.includes(timeSlot) ? 'active' : 'inactive'}`}
+              type="button"
+              onClick={() => handleHourClick(timeSlot)}
+            >
+              <h4>{timeSlot}</h4>
+            </button>
+          ))}
         </div>
-        <h3>¿A que horas?</h3>
+        <h3>¿A qué horas?</h3>
       </div>
       <hr className="date-blue-line" />
-      <div className="Pros-cont">
+      <div
+        className="Pros-cont"
+        style={{ display: collection === 'pros' ? 'none' : 'block' }}
+      >
         <div className="Pros-btn-cont">
-          <button type="button"><h3>Ver pros</h3></button>
+          <button type="button">
+            <h3>Ver pros</h3>
+          </button>
         </div>
         <div className="pro-img-def">
           <div className="user-image-comt">
-            <img src={User} alt="user-image" className="pro-img" />
+            <img src={User} alt="user" className="pro-img" />
           </div>
         </div>
       </div>
       <div className="DynamiCanlendar-btn-cont">
-        <button type="submit"><h4>Confirmar</h4></button>
+        <button type="submit">
+          <h4>Confirmar</h4>
+        </button>
       </div>
     </div>
   );
