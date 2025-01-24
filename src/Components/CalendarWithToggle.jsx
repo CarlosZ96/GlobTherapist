@@ -93,7 +93,7 @@ const Calendar = ({ collection }) => {
               (_, i) => `${formatTime(startTime + i)}-${formatTime(startTime + i + 1)}`,
             ),
           }
-          : { date, time: formatTimeRange(selectedTime) }; // Solo un horario por día
+          : { date, time: formatTimeRange(selectedTime) };
       });
 
       const updatedHorarios = [...(userData[horariosKey] || []), ...newHorarios];
@@ -101,7 +101,7 @@ const Calendar = ({ collection }) => {
       await updateDoc(userRef, { [horariosKey]: updatedHorarios });
       console.log(`${horariosKey} confirmados:`, updatedHorarios);
 
-      setIsConfirmed(true); // Deshabilitar botón y mostrar "Editar"
+      setIsConfirmed(true);
     } catch (error) {
       console.error('Error al confirmar horarios:', error);
     }
