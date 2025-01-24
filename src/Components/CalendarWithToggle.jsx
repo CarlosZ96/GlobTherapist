@@ -1,3 +1,4 @@
+/* eslint-disable no-plusplus */
 /* eslint-disable no-await-in-loop */
 /* eslint-disable no-restricted-syntax */
 /* eslint-disable no-shadow */
@@ -9,6 +10,7 @@ import React, { useState } from 'react';
 import PropTypes from 'prop-types';
 import { doc, getDoc, updateDoc } from 'firebase/firestore';
 import { db } from '../firebase';
+import { useAuth } from '../AuthContext';
 import useMonthData from '../hooks/useMonthData';
 import User from '../img/user.png';
 import '../stylesheets/month.css';
@@ -18,13 +20,16 @@ const Calendar = ({ collection }) => {
     days, loading, toggleDayStatus, monthName, changeMonth, monthOffset,
   } = useMonthData();
   const daysOfWeek = ['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom'];
+  const { currentUser, currentPro } = useAuth(); // Extraer datos del usuario logueado
+  const [startTime, setStartTime] = useState(8); // Hora inicial (en formato 24 horas)
+  const [endTime, setEndTime] = useState(22); // Hora final (en formato 24 horas)
+  const [selectedTime, setSelectedTime] = useState(7);
   const [selectedDay, setSelectedDay] = useState(null);
-  const [activeHours, setActiveHours] = useState([]);
+  const [isConfirmed, setIsConfirmed] = useState(false);
 
   if (loading) {
     return <div>Loading...</div>;
   }
-
   const handleDayClick = (index) => {
     if (collection === 'users') {
       setSelectedDay(index);
@@ -32,68 +37,95 @@ const Calendar = ({ collection }) => {
       toggleDayStatus(index);
     }
   };
-
-  const handleHourClick = (hour) => {
-    setActiveHours((prev) => (prev.includes(hour) ? prev.filter((h) => h !== hour) : [...prev, hour]));
+  const incrementTime = (setter, current) => {
+    if (collection === 'pros') {
+      if (setter === setStartTime && current < endTime - 1) setter(current + 1);
+      if (setter === setEndTime && current < 22) setter(current + 1);
+    } else if (collection === 'users' && selectedTime < 22) {
+      setSelectedTime(selectedTime + 1);
+    }
   };
 
+  const decrementTime = (setter, current) => {
+    if (collection === 'pros') {
+      if (setter === setStartTime && current > 8) setter(current - 1);
+      if (setter === setEndTime && current > startTime + 1) setter(current - 1);
+    } else if (collection === 'users' && selectedTime > 7) {
+      setSelectedTime(selectedTime - 1);
+    }
+  };
+  const formatTime = (hour) => {
+    const period = hour >= 12 ? 'pm' : 'am';
+    const formattedHour = hour > 12 ? hour - 12 : hour;
+    return `${formattedHour}:00${period}`;
+  };
+  const formatTimeRange = (hour) => {
+    const start = `${hour > 12 ? hour - 12 : hour}:00${hour >= 12 ? 'pm' : 'am'}`;
+    const end = `${hour > 12 ? hour - 12 : hour}:40${hour >= 12 ? 'pm' : 'am'}`;
+    return `${start}-${end}`;
+  };
   const handleConfirmHours = async () => {
-    if (collection !== 'pros') return;
-    const activeDaysData = days.filter((day) => day?.active).map((days) => days.date);
-    if (activeDaysData.length === 0 || activeHours.length === 0) {
-      console.log('No hay días u horarios seleccionados.');
+    const selectedDates = collection === 'users'
+      ? [days[selectedDay]?.date] // Solo un día para usuarios
+      : days.filter((day) => day?.active).map((day) => day.date); // Todos los días activos para pros
+
+    if (!selectedDates.length) {
+      console.log('Por favor, selecciona un día.');
       return;
     }
-    const monthRef = doc(db, 'days', monthName);
+
     try {
-      const monthSnap = await getDoc(monthRef);
-      if (!monthSnap.exists()) {
-        console.log('El mes no existe en la base de datos.');
+      const userRef = doc(db, collection, currentUser.uid);
+      const userSnap = await getDoc(userRef);
+
+      if (!userSnap.exists()) {
+        console.log(`El usuario no existe en la colección ${collection}.`);
         return;
       }
-      const monthData = monthSnap.data();
-      if (!monthData.days || !Array.isArray(monthData.days)) {
-        console.log('No se encontró el array "day" en la colección.');
-        return;
-      }
-      const updatedDays = monthData.days.map((dayEntry) => {
-        if (activeDaysData.includes(dayEntry.date)) {
-          const updatedDay = { ...dayEntry };
-          activeHours.forEach((hour) => {
-            if (!updatedDay[hour]) {
-              updatedDay[hour] = [];
-            }
-          });
-          return updatedDay;
-        }
-        return dayEntry;
+      const userData = userSnap.data();
+      const horariosKey = collection === 'pros' ? 'horarios' : 'Citas';
+
+      const newHorarios = selectedDates.map((date) => {
+        return collection === 'pros'
+          ? {
+            date,
+            timeSlots: Array.from(
+              { length: endTime - startTime },
+              (_, i) => `${formatTime(startTime + i)}-${formatTime(startTime + i + 1)}`,
+            ),
+          }
+          : { date, time: formatTimeRange(selectedTime) }; // Solo un horario por día
       });
-      await updateDoc(monthRef, { days: updatedDays });
-      console.log('Horarios confirmados y guardados en Firebase.');
+
+      const updatedHorarios = [...(userData[horariosKey] || []), ...newHorarios];
+
+      await updateDoc(userRef, { [horariosKey]: updatedHorarios });
+      console.log(`${horariosKey} confirmados:`, updatedHorarios);
+
+      setIsConfirmed(true); // Deshabilitar botón y mostrar "Editar"
     } catch (error) {
-      console.error('Error al guardar horarios:', error);
+      console.error('Error al confirmar horarios:', error);
     }
   };
 
-  const generateHourButtons = () => {
-    const hours = [];
-    let startTime = 7 * 60;
-    const endTime = 22 * 60;
-    while (startTime < endTime) {
-      const nextTime = startTime + 40;
-      const formatTime = (minutes) => {
-        const hours = Math.floor(minutes / 60);
-        const mins = minutes % 60;
-        const period = hours >= 12 ? 'pm' : 'am';
-        const formattedHour = hours > 12 ? hours - 12 : hours;
-        return `${formattedHour}:${mins === 0 ? '00' : mins}${period}`;
-      };
-      const startHour = formatTime(startTime);
-      const endHour = formatTime(nextTime);
-      hours.push(`${startHour}-${endHour}`);
-      startTime = (Math.floor(startTime / 60) + 1) * 60;
+  const handleEditHours = async () => {
+    try {
+      const userRef = doc(db, collection, currentUser.uid);
+      const userSnap = await getDoc(userRef);
+
+      if (!userSnap.exists()) {
+        console.log(`El usuario no existe en la colección ${collection}.`);
+        return;
+      }
+
+      const horariosKey = collection === 'pros' ? 'horarios' : 'Citas';
+      await updateDoc(userRef, { [horariosKey]: [] });
+      console.log(`${horariosKey} eliminados.`);
+
+      setIsConfirmed(false);
+    } catch (error) {
+      console.error('Error al eliminar horarios:', error);
     }
-    return hours;
   };
 
   return (
@@ -169,24 +201,50 @@ const Calendar = ({ collection }) => {
       </div>
       <hr className="date-blue-line" />
       <div className="Hours-cont">
-        <div className="Hours-btn-cont">
-          <button className="See-Hours" type="button" onClick={handleConfirmHours}>
-            <h3>{collection === 'pros' ? 'Confirmar mis horarios' : 'Ver horarios'}</h3>
+        {collection === 'pros' ? (
+          <div className="Hours-selector">
+            <div className="Time-selector">
+              <h3>De:</h3>
+              <div className="Time-control">
+                <button type="button" onClick={() => decrementTime(setStartTime, startTime)}>-</button>
+                <div>{formatTime(startTime)}</div>
+                <button type="button" onClick={() => incrementTime(setStartTime, startTime)}>+</button>
+              </div>
+            </div>
+            <div className="Time-selector">
+              <h3>A:</h3>
+              <div className="Time-control">
+                <button type="button" onClick={() => decrementTime(setEndTime, endTime)}>-</button>
+                <div>{formatTime(endTime)}</div>
+                <button type="button" onClick={() => incrementTime(setEndTime, endTime)}>+</button>
+              </div>
+            </div>
+          </div>
+        ) : (
+          <div className="Hours-selector">
+            <h3>Selecciona horario:</h3>
+            <div className="Time-control">
+              <button type="button" onClick={() => decrementTime()}>-</button>
+              <div>{formatTimeRange(selectedTime)}</div>
+              <button type="button" onClick={() => incrementTime()}>+</button>
+            </div>
+          </div>
+        )}
+        <div className="Confirm-button">
+          <button
+            type="button"
+            className="See-Hours"
+            onClick={handleConfirmHours}
+            disabled={isConfirmed}
+          >
+            <h3>{collection === 'pros' ? 'Confirmar mis horarios' : 'Confirmar hora'}</h3>
           </button>
-        </div>
-        <div className="Hours-Users">
-          {generateHourButtons().map((timeSlot, index) => (
-            <button
-              key={index}
-              className={`Hour-btn ${activeHours.includes(timeSlot) ? 'active' : 'inactive'}`}
-              type="button"
-              onClick={() => handleHourClick(timeSlot)}
-            >
-              <h4>{timeSlot}</h4>
+          {isConfirmed && (
+            <button type="button" className="Edit-Hours" onClick={handleEditHours}>
+              <h3>Editar</h3>
             </button>
-          ))}
+          )}
         </div>
-        <h3>¿A qué horas?</h3>
       </div>
       <hr className="date-blue-line" />
       <div
