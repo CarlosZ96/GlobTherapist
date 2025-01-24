@@ -2,7 +2,6 @@
 /* eslint-disable no-await-in-loop */
 /* eslint-disable no-restricted-syntax */
 /* eslint-disable no-shadow */
-/* eslint-disable no-unused-vars */
 /* eslint-disable max-len */
 /* eslint-disable no-nested-ternary */
 /* eslint-disable react/no-array-index-key */
@@ -20,9 +19,9 @@ const Calendar = ({ collection }) => {
     days, loading, toggleDayStatus, monthName, changeMonth, monthOffset,
   } = useMonthData();
   const daysOfWeek = ['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom'];
-  const { currentUser, currentPro } = useAuth(); // Extraer datos del usuario logueado
-  const [startTime, setStartTime] = useState(8); // Hora inicial (en formato 24 horas)
-  const [endTime, setEndTime] = useState(22); // Hora final (en formato 24 horas)
+  const { currentUser } = useAuth();
+  const [startTime, setStartTime] = useState(8);
+  const [endTime, setEndTime] = useState(22);
   const [selectedTime, setSelectedTime] = useState(7);
   const [selectedDay, setSelectedDay] = useState(null);
   const [isConfirmed, setIsConfirmed] = useState(false);
@@ -66,8 +65,8 @@ const Calendar = ({ collection }) => {
   };
   const handleConfirmHours = async () => {
     const selectedDates = collection === 'users'
-      ? [days[selectedDay]?.date] // Solo un día para usuarios
-      : days.filter((day) => day?.active).map((day) => day.date); // Todos los días activos para pros
+      ? [days[selectedDay]?.date]
+      : days.filter((day) => day?.active).map((day) => day.date);
 
     if (!selectedDates.length) {
       console.log('Por favor, selecciona un día.');
