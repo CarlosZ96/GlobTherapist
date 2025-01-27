@@ -16,25 +16,25 @@ import '../stylesheets/month.css';
 
 const Calendar = ({ collection }) => {
   const {
-    days, loading, toggleDayStatus, monthName, changeMonth, monthOffset,
+    days, loading, monthName, changeMonth, monthOffset,
   } = useMonthData();
   const daysOfWeek = ['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom'];
   const { currentUser } = useAuth();
   const [startTime, setStartTime] = useState(8);
   const [endTime, setEndTime] = useState(22);
   const [selectedTime, setSelectedTime] = useState(7);
-  const [selectedDay, setSelectedDay] = useState(null);
+  const [selectedDay, setSelectedDay] = useState([]);
   const [isConfirmed, setIsConfirmed] = useState(false);
 
   if (loading) {
     return <div>Loading...</div>;
   }
-  const handleDayClick = (index) => {
-    if (collection === 'users') {
-      setSelectedDay(index);
-    } else if (collection === 'pros') {
-      toggleDayStatus(index);
-    }
+  const handleDayClick = (day) => {
+    setSelectedDay((prev) => {
+      return prev.some((d) => d.date === day.date && d.monthOffset === monthOffset)
+        ? prev.filter((d) => !(d.date === day.date && d.monthOffset === monthOffset))
+        : [...prev, { date: day.date, monthOffset }];
+    });
   };
   const incrementTime = (setter, current) => {
     if (collection === 'pros') {
@@ -64,12 +64,8 @@ const Calendar = ({ collection }) => {
     return `${start}-${end}`;
   };
   const handleConfirmHours = async () => {
-    const selectedDates = collection === 'users'
-      ? [days[selectedDay]?.date]
-      : days.filter((day) => day?.active).map((day) => day.date);
-
-    if (!selectedDates.length) {
-      console.log('Por favor, selecciona un día.');
+    if (!selectedDay.length) {
+      console.log('Por favor, selecciona al menos un día.');
       return;
     }
 
@@ -81,32 +77,33 @@ const Calendar = ({ collection }) => {
         console.log(`El usuario no existe en la colección ${collection}.`);
         return;
       }
+
       const userData = userSnap.data();
       const horariosKey = collection === 'pros' ? 'horarios' : 'Citas';
+      const newHorarios = selectedDay.map(({ date, monthOffset }) => {
+        const monthIndex = new Date().getMonth() + monthOffset;
+        const calculatedMonthName = new Date(2023, monthIndex).toLocaleString('es-ES', { month: 'long' });
 
-      const newHorarios = selectedDates.map((date) => {
         return collection === 'pros'
           ? {
             date,
+            month: calculatedMonthName,
             timeSlots: Array.from(
               { length: endTime - startTime },
               (_, i) => `${formatTime(startTime + i)}-${formatTime(startTime + i + 1)}`,
             ),
           }
-          : { date, time: formatTimeRange(selectedTime) };
+          : { date, month: calculatedMonthName, time: formatTime(selectedTime) };
       });
 
       const updatedHorarios = [...(userData[horariosKey] || []), ...newHorarios];
-
       await updateDoc(userRef, { [horariosKey]: updatedHorarios });
       console.log(`${horariosKey} confirmados:`, updatedHorarios);
-
       setIsConfirmed(true);
     } catch (error) {
       console.error('Error al confirmar horarios:', error);
     }
   };
-
   const handleEditHours = async () => {
     try {
       const userRef = doc(db, collection, currentUser.uid);
@@ -161,19 +158,12 @@ const Calendar = ({ collection }) => {
       <hr className="date-blue-line" />
       <div className="Choose-Day-Cont">
         <div className="Calendar-cont">
-          {days.map((day, index) => (
+          {days && days.length > 0 && days.map((day, index) => (
             <button
               type="button"
               key={index}
-              className={`calendar-day ${collection === 'users'
-                ? selectedDay === index
-                  ? 'active'
-                  : 'inactive'
-                : day?.active
-                  ? 'active'
-                  : 'inactive'
-                }`}
-              onClick={() => handleDayClick(index)}
+              className={`calendar-day ${selectedDay.some((d) => d.date === day?.date && d.monthOffset === monthOffset) ? 'active' : 'inactive'}`}
+              onClick={() => handleDayClick(day)}
               disabled={!day}
             >
               {day ? day.date : ''}
