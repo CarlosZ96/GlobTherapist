@@ -65,7 +65,7 @@ const Calendar = ({ collection }) => {
   };
   const handleConfirmHours = async () => {
     if (!selectedDay.length) {
-      console.log('Por favor, selecciona al menos un día.');
+      alert('Por favor, selecciona al menos un día.');
       return;
     }
 
