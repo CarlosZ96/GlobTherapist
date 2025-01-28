@@ -251,11 +251,6 @@ const Calendar = ({ collection }) => {
           </div>
         </div>
       </div>
-      <div className="DynamiCanlendar-btn-cont">
-        <button type="submit">
-          <h4>Confirmar</h4>
-        </button>
-      </div>
     </div>
   );
 };

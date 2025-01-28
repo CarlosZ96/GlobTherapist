@@ -1,34 +1,149 @@
 /* eslint-disable no-unused-vars */
-import React from 'react';
-import { collection } from 'firebase/firestore';
+import React, { useState, useEffect } from 'react';
+import { getAuth } from 'firebase/auth';
+import { doc, getDoc, collection } from 'firebase/firestore';
 import { db } from '../firebase';
 import Calendar from './CalendarWithToggle';
 import '../stylesheets/Therapy.css';
 
 const Therapy = () => {
+  const auth = getAuth();
+  const user = auth.currentUser;
   const usersCollection = collection(db, 'users');
+  const [formData, setFormData] = useState({
+    name: '',
+    email: user?.email || '',
+    therapyType: '',
+    description: '',
+  });
+
+  const [errors, setErrors] = useState({
+    name: '',
+    phone: '',
+    email: '',
+    therapyType: '',
+  });
+
+  const fieldRefs = {
+    name: React.createRef(),
+    phone: React.createRef(),
+    email: React.createRef(),
+    therapyType: React.createRef(),
+  };
+
+  const validateForm = () => {
+    let isValid = true;
+    const newErrors = {
+      name: '',
+      phone: '',
+      email: '',
+      therapyType: '',
+    };
+
+    if (!formData.name.trim()) {
+      newErrors.name = 'El nombre es obligatorio';
+      if (isValid) fieldRefs.name.current.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      isValid = false;
+    }
+    if (!formData.phone.trim()) {
+      newErrors.phone = 'El teléfono es obligatorio';
+      if (isValid) fieldRefs.phone.current.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      isValid = false;
+    }
+    if (!formData.email.trim()) {
+      newErrors.email = 'El correo electrónico es obligatorio';
+      if (isValid) fieldRefs.email.current.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      isValid = false;
+    }
+    if (!formData.therapyType) {
+      newErrors.therapyType = 'Debes elegir un tipo de terapia';
+      if (isValid) fieldRefs.therapyType.current.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      isValid = false;
+    }
+    setErrors(newErrors);
+    return isValid;
+  };
+
+  const handleTherapyTypeClick = (type) => {
+    setFormData({ ...formData, therapyType: type });
+  };
+
+  const handleSubmit = (event) => {
+    event.preventDefault();
+    if (validateForm()) {
+      console.log('Formulario válido:', formData);
+      const newTherapyRequest = {
+        ...formData,
+        description: event.target.description.value,
+      };
+      console.log('Datos de la terapia:', newTherapyRequest);
+      alert('¡Formulario enviado exitosamente!');
+    }
+  };
+
+  useEffect(() => {
+    const fetchUserData = async () => {
+      if (user) {
+        const userDocRef = doc(db, 'users', user.uid);
+        const userDoc = await getDoc(userDocRef);
+
+        if (userDoc.exists()) {
+          const userData = userDoc.data();
+          setFormData((prevData) => ({
+            ...prevData,
+            phone: userData.telefono || 'Teléfono no encontrado',
+          }));
+        } else {
+          console.error('No se encontró el documento del usuario en Firestore.');
+        }
+      }
+    };
+
+    fetchUserData();
+  }, [user]);
 
   return (
-    <div className="Therapy-body">
+    <form className="Therapy-body" onSubmit={handleSubmit}>
       <div className="Therapy-title-cont">
         <h1>GLOBTHERAPIST</h1>
       </div>
-      <form className="Ask-Therapy">
+      <div className="Ask-Therapy">
         <div className="Ask-Therapy-subtittle">
           <h2>Agenda tu terapia</h2>
         </div>
         <div className="Ask-Therapy-fields-conts">
           <div className="Ask-Therapy-field-cont">
             <h3>Nombre completo:</h3>
-            <input className="Ask-Therapy-fields-input" type="text" />
+            <input
+              ref={fieldRefs.name}
+              className="Ask-Therapy-fields-input"
+              type="text"
+              value={formData.name}
+              onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+            />
+            {errors.name && <h5 className="error-text">{errors.name}</h5>}
           </div>
           <div className="Ask-Therapy-field-cont">
             <h3>Teléfono:</h3>
-            <input className="Ask-Therapy-fields-input" type="text" />
+            <input
+              ref={fieldRefs.phone}
+              className="Ask-Therapy-fields-input"
+              type="text"
+              value={formData.phone}
+              onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+            />
+            {errors.phone && <h5 className="error-text">{errors.phone}</h5>}
           </div>
           <div className="Ask-Therapy-field-cont">
             <h3>Email:</h3>
-            <input className="Ask-Therapy-fields-input" type="text" />
+            <input
+              ref={fieldRefs.email}
+              className="Ask-Therapy-fields-input"
+              type="email"
+              value={formData.email}
+              onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+            />
+            {errors.email && <h5 className="error-text">{errors.email}</h5>}
           </div>
         </div>
         <hr className="white-line" />
@@ -36,30 +151,44 @@ const Therapy = () => {
           <h3>Elige el tipo de terapia que deseas:</h3>
         </div>
         <div className="Therapies-cont">
-          <div className="Therapy-tittle-cont">
-            <h4 className="Therapy-tittle">Fisica</h4>
-          </div>
-          <div className="Therapy-tittle-cont">
-            <h4 className="Therapy-tittle">Lenguaje</h4>
-          </div>
-          <div className="Therapy-tittle-cont">
-            <h4 className="Therapy-tittle">Mental</h4>
-          </div>
-          <div className="Therapy-tittle-cont">
-            <h4 className="Therapy-tittle">Ocupacional</h4>
-          </div>
+          {['Fisica', 'Lenguaje', 'Mental', 'Ocupacional'].map((type) => (
+            <button
+              key={type}
+              type="button"
+              className={
+                formData.therapyType === type
+                  ? 'Therapy-tittle-cont Therapy-tittle'
+                  : 'inactive-cont inactive-txt'
+              }
+              onClick={() => handleTherapyTypeClick(type)}
+            >
+              {type}
+            </button>
+          ))}
         </div>
+        {errors.therapyType && (
+          <div className="error-container">
+            <h5 className="error-text">{errors.therapyType}</h5>
+          </div>
+        )}
         <div className="Therapy-info">
-          <h3>Explícanos brevemente por qué requieres tu terapia.</h3>
-          <p className="Therapy-txt-field">...</p>
+          <textarea
+            className="Therapy-txt-field"
+            placeholder="Explícanos brevemente por qué requieres tu terapia."
+          />
         </div>
         <hr className="white-line" />
         <div className="Ask-Therapy-txt">
           <h3>¿Que dia y a que horas quieres tu cita?:</h3>
         </div>
-      </form>
+      </div>
       <Calendar collection="users" />
-    </div>
+      <div className="DynamiCanlendar-btn-cont">
+        <button type="submit">
+          <h4>Confirmar</h4>
+        </button>
+      </div>
+    </form>
   );
 };
 
