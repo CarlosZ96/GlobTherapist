@@ -12,6 +12,7 @@ const Therapy = () => {
   const usersCollection = collection(db, 'users');
   const [formData, setFormData] = useState({
     name: '',
+    phone: '',
     email: user?.email || '',
     therapyType: '',
     description: '',

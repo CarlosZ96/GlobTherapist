@@ -30,11 +30,15 @@ const Calendar = ({ collection }) => {
     return <div>Loading...</div>;
   }
   const handleDayClick = (day) => {
-    setSelectedDay((prev) => {
-      return prev.some((d) => d.date === day.date && d.monthOffset === monthOffset)
-        ? prev.filter((d) => !(d.date === day.date && d.monthOffset === monthOffset))
-        : [...prev, { date: day.date, monthOffset }];
-    });
+    if (collection === 'users') {
+      setSelectedDay([{ date: day.date, monthOffset }]);
+    } else {
+      setSelectedDay((prev) => {
+        return prev.some((d) => d.date === day.date && d.monthOffset === monthOffset)
+          ? prev.filter((d) => !(d.date === day.date && d.monthOffset === monthOffset))
+          : [...prev, { date: day.date, monthOffset }];
+      });
+    }
   };
   const incrementTime = (setter, current) => {
     if (collection === 'pros') {
@@ -108,16 +112,13 @@ const Calendar = ({ collection }) => {
     try {
       const userRef = doc(db, collection, currentUser.uid);
       const userSnap = await getDoc(userRef);
-
       if (!userSnap.exists()) {
         console.log(`El usuario no existe en la colección ${collection}.`);
         return;
       }
-
       const horariosKey = collection === 'pros' ? 'horarios' : 'Citas';
       await updateDoc(userRef, { [horariosKey]: [] });
       console.log(`${horariosKey} eliminados.`);
-
       setIsConfirmed(false);
     } catch (error) {
       console.error('Error al eliminar horarios:', error);
@@ -164,7 +165,7 @@ const Calendar = ({ collection }) => {
               key={index}
               className={`calendar-day ${selectedDay.some((d) => d.date === day?.date && d.monthOffset === monthOffset) ? 'active' : 'inactive'}`}
               onClick={() => handleDayClick(day)}
-              disabled={!day}
+              disabled={!day || isConfirmed}
             >
               {day ? day.date : ''}
             </button>
@@ -226,7 +227,7 @@ const Calendar = ({ collection }) => {
             onClick={handleConfirmHours}
             disabled={isConfirmed}
           >
-            <h3>{collection === 'pros' ? 'Confirmar mis horarios' : 'Confirmar hora'}</h3>
+            <h3 disabled={isConfirmed}>{collection === 'pros' ? 'Confirmar mis horarios' : 'Confirmar hora'}</h3>
           </button>
           {isConfirmed && (
             <button type="button" className="Edit-Hours" onClick={handleEditHours}>
@@ -241,7 +242,10 @@ const Calendar = ({ collection }) => {
         style={{ display: collection === 'pros' ? 'none' : 'block' }}
       >
         <div className="Pros-btn-cont">
-          <button type="button">
+          <button
+            type="button"
+            disabled={!isConfirmed}
+          >
             <h3>Ver pros</h3>
           </button>
         </div>
