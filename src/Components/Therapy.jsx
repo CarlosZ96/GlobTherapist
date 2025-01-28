@@ -1,7 +1,9 @@
 /* eslint-disable no-unused-vars */
 import React, { useState, useEffect } from 'react';
 import { getAuth } from 'firebase/auth';
-import { doc, getDoc, collection } from 'firebase/firestore';
+import {
+  doc, getDoc, collection, updateDoc,
+} from 'firebase/firestore';
 import { db } from '../firebase';
 import Calendar from './CalendarWithToggle';
 import '../stylesheets/Therapy.css';
@@ -10,6 +12,12 @@ const Therapy = () => {
   const auth = getAuth();
   const user = auth.currentUser;
   const usersCollection = collection(db, 'users');
+  const [selectedAppointments, setSelectedAppointments] = useState([]);
+
+  const handleDateSelection = (appointments) => {
+    setSelectedAppointments(appointments);
+  };
+
   const [formData, setFormData] = useState({
     name: '',
     phone: '',
@@ -69,16 +77,26 @@ const Therapy = () => {
     setFormData({ ...formData, therapyType: type });
   };
 
-  const handleSubmit = (event) => {
+  const handleSubmit = async (event) => {
     event.preventDefault();
     if (validateForm()) {
-      console.log('Formulario válido:', formData);
-      const newTherapyRequest = {
-        ...formData,
-        description: event.target.description.value,
-      };
-      console.log('Datos de la terapia:', newTherapyRequest);
-      alert('¡Formulario enviado exitosamente!');
+      const newTherapyRequest = { ...formData };
+      console.log('Formulario válido:', newTherapyRequest);
+      try {
+        const userRef = doc(db, 'users', auth.currentUser.uid);
+        const userSnap = await getDoc(userRef);
+        if (!userSnap.exists()) {
+          console.error('El usuario no existe.');
+          return;
+        }
+        const userData = userSnap.data();
+        const updatedCitas = [...(userData.Citas || []), ...selectedAppointments];
+        await updateDoc(userRef, { Citas: updatedCitas });
+        console.log('Citas actualizadas:', updatedCitas);
+        alert('¡Formulario enviado exitosamente!');
+      } catch (error) {
+        console.error('Error al actualizar citas:', error);
+      }
     }
   };
 
@@ -176,6 +194,8 @@ const Therapy = () => {
           <textarea
             className="Therapy-txt-field"
             placeholder="Explícanos brevemente por qué requieres tu terapia."
+            value={formData.description}
+            onChange={(e) => setFormData({ ...formData, description: e.target.value })}
           />
         </div>
         <hr className="white-line" />
@@ -183,7 +203,7 @@ const Therapy = () => {
           <h3>¿Que dia y a que horas quieres tu cita?:</h3>
         </div>
       </div>
-      <Calendar collection="users" />
+      <Calendar collection="users" onDateSelection={handleDateSelection} />
       <div className="DynamiCanlendar-btn-cont">
         <button type="submit">
           <h4>Confirmar</h4>

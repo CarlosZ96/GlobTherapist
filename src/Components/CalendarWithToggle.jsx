@@ -1,3 +1,5 @@
+/* eslint-disable react/require-default-props */
+/* eslint-disable react/no-unused-prop-types */
 /* eslint-disable no-plusplus */
 /* eslint-disable no-await-in-loop */
 /* eslint-disable no-restricted-syntax */
@@ -14,7 +16,7 @@ import useMonthData from '../hooks/useMonthData';
 import User from '../img/user.png';
 import '../stylesheets/month.css';
 
-const Calendar = ({ collection }) => {
+const Calendar = ({ collection, onDateSelection }) => {
   const {
     days, loading, monthName, changeMonth, monthOffset,
   } = useMonthData();
@@ -67,45 +69,58 @@ const Calendar = ({ collection }) => {
     const end = `${hour > 12 ? hour - 12 : hour}:40${hour >= 12 ? 'pm' : 'am'}`;
     return `${start}-${end}`;
   };
+
   const handleConfirmHours = async () => {
     if (!selectedDay.length) {
       alert('Por favor, selecciona al menos un día.');
       return;
     }
 
-    try {
-      const userRef = doc(db, collection, currentUser.uid);
-      const userSnap = await getDoc(userRef);
-
-      if (!userSnap.exists()) {
-        console.log(`El usuario no existe en la colección ${collection}.`);
-        return;
-      }
-
-      const userData = userSnap.data();
-      const horariosKey = collection === 'pros' ? 'horarios' : 'Citas';
-      const newHorarios = selectedDay.map(({ date, monthOffset }) => {
+    if (collection === 'users') {
+      const formattedData = selectedDay.map(({ date, monthOffset }) => {
         const monthIndex = new Date().getMonth() + monthOffset;
         const calculatedMonthName = new Date(2023, monthIndex).toLocaleString('es-ES', { month: 'long' });
 
-        return collection === 'pros'
-          ? {
+        return {
+          date,
+          month: calculatedMonthName,
+          time: formatTime(selectedTime),
+        };
+      });
+
+      onDateSelection(formattedData);
+    } else if (collection === 'pros') {
+      try {
+        const userRef = doc(db, collection, currentUser.uid);
+        const userSnap = await getDoc(userRef);
+
+        if (!userSnap.exists()) {
+          console.log(`El usuario no existe en la colección ${collection}.`);
+          return;
+        }
+
+        const userData = userSnap.data();
+        const newHorarios = selectedDay.map(({ date, monthOffset }) => {
+          const monthIndex = new Date().getMonth() + monthOffset;
+          const calculatedMonthName = new Date(2023, monthIndex).toLocaleString('es-ES', { month: 'long' });
+
+          return {
             date,
             month: calculatedMonthName,
             timeSlots: Array.from(
               { length: endTime - startTime },
               (_, i) => `${formatTime(startTime + i)}-${formatTime(startTime + i + 1)}`,
             ),
-          }
-          : { date, month: calculatedMonthName, time: formatTime(selectedTime) };
-      });
+          };
+        });
 
-      const updatedHorarios = [...(userData[horariosKey] || []), ...newHorarios];
-      await updateDoc(userRef, { [horariosKey]: updatedHorarios });
-      console.log(`${horariosKey} confirmados:`, updatedHorarios);
-      setIsConfirmed(true);
-    } catch (error) {
-      console.error('Error al confirmar horarios:', error);
+        const updatedHorarios = [...(userData.horarios || []), ...newHorarios];
+        await updateDoc(userRef, { horarios: updatedHorarios });
+        console.log('Horarios confirmados:', updatedHorarios);
+        setIsConfirmed(true);
+      } catch (error) {
+        console.error('Error al confirmar horarios:', error);
+      }
     }
   };
   const handleEditHours = async () => {
@@ -261,6 +276,7 @@ const Calendar = ({ collection }) => {
 
 Calendar.propTypes = {
   collection: PropTypes.oneOf(['users', 'pros']).isRequired,
+  onDateSelection: PropTypes.func,
 };
 
 export default Calendar;
