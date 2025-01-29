@@ -80,22 +80,36 @@ const Therapy = () => {
   const handleSubmit = async (event) => {
     event.preventDefault();
     if (validateForm()) {
-      const newTherapyRequest = { ...formData };
-      console.log('Formulario válido:', newTherapyRequest);
       try {
         const userRef = doc(db, 'users', auth.currentUser.uid);
         const userSnap = await getDoc(userRef);
+
         if (!userSnap.exists()) {
           console.error('El usuario no existe.');
           return;
         }
+
         const userData = userSnap.data();
-        const updatedCitas = [...(userData.Citas || []), ...selectedAppointments];
+        const prevCitas = userData.Citas || [];
+        const newCitas = selectedAppointments.map((appointment) => ({
+          date: appointment.date,
+          time: appointment.time,
+          month: appointment.month,
+          name: formData.name,
+          phone: formData.phone,
+          email: formData.email,
+          therapyType: formData.therapyType,
+          description: formData.description,
+        }));
+
+        const updatedCitas = [...prevCitas, ...newCitas];
+
         await updateDoc(userRef, { Citas: updatedCitas });
-        console.log('Citas actualizadas:', updatedCitas);
+
+        console.log('Datos actualizados en Firestore:', updatedCitas);
         alert('¡Formulario enviado exitosamente!');
       } catch (error) {
-        console.error('Error al actualizar citas:', error);
+        console.error('Error al actualizar los datos:', error);
       }
     }
   };
