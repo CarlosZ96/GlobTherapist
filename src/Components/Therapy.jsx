@@ -119,6 +119,7 @@ const Therapy = () => {
 
       const newCitas = selectedAppointments.map((appointment) => ({
         date: appointment.date,
+        month: appointment.month,
         time: appointment.time,
         name: formData.name,
         phone: formData.phone,
