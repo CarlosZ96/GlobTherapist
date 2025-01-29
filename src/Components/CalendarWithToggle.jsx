@@ -71,8 +71,8 @@ const Calendar = ({ collection, onDateSelection }) => {
   };
 
   const handleConfirmHours = async () => {
-    if (!selectedDay.length) {
-      alert('Por favor, selecciona al menos un día.');
+    if (!selectedDay.length || selectedTime === null) {
+      alert('Por favor, selecciona al menos un día y una hora.');
       return;
     }
 
@@ -88,14 +88,17 @@ const Calendar = ({ collection, onDateSelection }) => {
         };
       });
 
+      console.log('Datos formateados para citas:', formattedData);
       onDateSelection(formattedData);
+      alert('Citas confirmadas correctamente.');
+      setIsConfirmed(true);
     } else if (collection === 'pros') {
       try {
         const userRef = doc(db, collection, currentUser.uid);
         const userSnap = await getDoc(userRef);
 
         if (!userSnap.exists()) {
-          console.log(`El usuario no existe en la colección ${collection}.`);
+          console.error(`El usuario no existe en la colección ${collection}.`);
           return;
         }
 

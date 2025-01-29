@@ -15,6 +15,7 @@ const Therapy = () => {
   const [selectedAppointments, setSelectedAppointments] = useState([]);
 
   const handleDateSelection = (appointments) => {
+    console.log('Citas seleccionadas recibidas:', appointments);
     setSelectedAppointments(appointments);
   };
 
@@ -51,22 +52,30 @@ const Therapy = () => {
 
     if (!formData.name.trim()) {
       newErrors.name = 'El nombre es obligatorio';
-      if (isValid) fieldRefs.name.current.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      if (fieldRefs.name.current) {
+        fieldRefs.name.current.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
       isValid = false;
     }
     if (!formData.phone.trim()) {
       newErrors.phone = 'El teléfono es obligatorio';
-      if (isValid) fieldRefs.phone.current.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      if (fieldRefs.phone.current) {
+        fieldRefs.name.current.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
       isValid = false;
     }
     if (!formData.email.trim()) {
       newErrors.email = 'El correo electrónico es obligatorio';
-      if (isValid) fieldRefs.email.current.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      if (fieldRefs.email.current) {
+        fieldRefs.name.current.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
       isValid = false;
     }
     if (!formData.therapyType) {
       newErrors.therapyType = 'Debes elegir un tipo de terapia';
-      if (isValid) fieldRefs.therapyType.current.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      if (fieldRefs.therapyType.current) {
+        fieldRefs.name.current.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
       isValid = false;
     }
     setErrors(newErrors);
@@ -79,38 +88,62 @@ const Therapy = () => {
 
   const handleSubmit = async (event) => {
     event.preventDefault();
-    if (validateForm()) {
-      try {
-        const userRef = doc(db, 'users', auth.currentUser.uid);
-        const userSnap = await getDoc(userRef);
 
-        if (!userSnap.exists()) {
-          console.error('El usuario no existe.');
-          return;
-        }
+    if (!validateForm()) {
+      console.error('El formulario no es válido.');
+      return;
+    }
 
-        const userData = userSnap.data();
-        const prevCitas = userData.Citas || [];
-        const newCitas = selectedAppointments.map((appointment) => ({
-          date: appointment.date,
-          time: appointment.time,
-          month: appointment.month,
-          name: formData.name,
-          phone: formData.phone,
-          email: formData.email,
-          therapyType: formData.therapyType,
-          description: formData.description,
-        }));
+    if (!auth.currentUser) {
+      console.error('Usuario no autenticado.');
+      alert('Debes iniciar sesión para agendar una cita.');
+      return;
+    }
 
-        const updatedCitas = [...prevCitas, ...newCitas];
+    if (selectedAppointments.length === 0) {
+      alert('Por favor, selecciona al menos una cita.');
+      return;
+    }
 
-        await updateDoc(userRef, { Citas: updatedCitas });
+    try {
+      const userRef = doc(db, 'users', auth.currentUser.uid);
+      const userSnap = await getDoc(userRef);
 
-        console.log('Datos actualizados en Firestore:', updatedCitas);
-        alert('¡Formulario enviado exitosamente!');
-      } catch (error) {
-        console.error('Error al actualizar los datos:', error);
+      if (!userSnap.exists()) {
+        console.error('El usuario no existe en Firestore.');
+        return;
       }
+
+      const userData = userSnap.data();
+      const prevCitas = userData.Citas || [];
+
+      const newCitas = selectedAppointments.map((appointment) => ({
+        date: appointment.date,
+        time: appointment.time,
+        name: formData.name,
+        phone: formData.phone,
+        email: formData.email,
+        therapyType: formData.therapyType,
+        description: formData.description,
+      }));
+
+      console.log('Nuevas citas a agregar:', newCitas);
+      const updatedCitas = [...prevCitas, ...newCitas];
+      await updateDoc(userRef, { Citas: updatedCitas });
+
+      console.log('Datos actualizados en Firestore:', updatedCitas);
+      alert('¡Formulario enviado exitosamente!');
+      setFormData({
+        name: '',
+        phone: '',
+        email: user?.email || '',
+        therapyType: '',
+        description: '',
+      });
+      setSelectedAppointments([]);
+    } catch (error) {
+      console.error('Error al actualizar los datos en Firestore:', error);
+      alert('Hubo un error al enviar el formulario. Por favor, inténtalo de nuevo.');
     }
   };
 
