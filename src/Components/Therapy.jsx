@@ -13,10 +13,12 @@ const Therapy = () => {
   const user = auth.currentUser;
   const usersCollection = collection(db, 'users');
   const [selectedAppointments, setSelectedAppointments] = useState([]);
+  const [showAppointmentError, setShowAppointmentError] = useState(false);
 
   const handleDateSelection = (appointments) => {
     console.log('Citas seleccionadas recibidas:', appointments);
     setSelectedAppointments(appointments);
+    setShowAppointmentError(false);
   };
 
   const [formData, setFormData] = useState({
@@ -60,21 +62,21 @@ const Therapy = () => {
     if (!formData.phone.trim()) {
       newErrors.phone = 'El teléfono es obligatorio';
       if (fieldRefs.phone.current) {
-        fieldRefs.name.current.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        fieldRefs.phone.current.scrollIntoView({ behavior: 'smooth', block: 'center' });
       }
       isValid = false;
     }
     if (!formData.email.trim()) {
       newErrors.email = 'El correo electrónico es obligatorio';
       if (fieldRefs.email.current) {
-        fieldRefs.name.current.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        fieldRefs.email.current.scrollIntoView({ behavior: 'smooth', block: 'center' });
       }
       isValid = false;
     }
     if (!formData.therapyType) {
       newErrors.therapyType = 'Debes elegir un tipo de terapia';
       if (fieldRefs.therapyType.current) {
-        fieldRefs.name.current.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        fieldRefs.therapyType.current.scrollIntoView({ behavior: 'smooth', block: 'center' });
       }
       isValid = false;
     }
@@ -101,7 +103,7 @@ const Therapy = () => {
     }
 
     if (selectedAppointments.length === 0) {
-      alert('Por favor, selecciona al menos una cita.');
+      setShowAppointmentError(true);
       return;
     }
 
@@ -142,6 +144,7 @@ const Therapy = () => {
         description: '',
       });
       setSelectedAppointments([]);
+      setShowAppointmentError(false);
     } catch (error) {
       console.error('Error al actualizar los datos en Firestore:', error);
       alert('Hubo un error al enviar el formulario. Por favor, inténtalo de nuevo.');
@@ -248,14 +251,21 @@ const Therapy = () => {
         </div>
         <hr className="white-line" />
         <div className="Ask-Therapy-txt">
-          <h3>¿Que dia y a que horas quieres tu cita?:</h3>
+          <h3>¿Qué día y a qué horas quieres tu cita?</h3>
         </div>
-      </div>
-      <Calendar collection="users" onDateSelection={handleDateSelection} />
-      <div className="DynamiCanlendar-btn-cont">
-        <button type="submit">
-          <h4>Confirmar</h4>
-        </button>
+        <div className="calendar-cont">
+          <Calendar collection="users" onDateSelection={handleDateSelection} />
+          {showAppointmentError && (
+            <div className="appointment-error">
+              <h5 className="error-text">Por favor, selecciona al menos una cita.</h5>
+            </div>
+          )}
+        </div>
+        <div className="DynamiCanlendar-btn-cont">
+          <button type="submit">
+            <h4>Confirmar</h4>
+          </button>
+        </div>
       </div>
     </form>
   );
