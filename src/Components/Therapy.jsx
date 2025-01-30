@@ -119,22 +119,25 @@ const Therapy = () => {
       const userData = userSnap.data();
       const prevCitas = userData.Citas || [];
 
-      const newCitas = selectedAppointments.map((appointment) => ({
-        date: appointment.date,
-        month: appointment.month,
-        time: appointment.time,
-        name: formData.name,
-        phone: formData.phone,
-        email: formData.email,
-        therapyType: formData.therapyType,
-        description: formData.description,
-      }));
+      // Actualizar las citas seleccionadas con los datos del formulario
+      const updatedCitas = prevCitas.map((cita) => {
+        if (selectedAppointments.some((app) => app.date === cita.date && app.time === cita.time)) {
+          return {
+            ...cita,
+            name: formData.name,
+            phone: formData.phone,
+            email: formData.email,
+            therapyType: formData.therapyType,
+            description: formData.description,
+            status: 'confirmed', // Cambiar el estado de la cita a confirmada
+          };
+        }
+        return cita;
+      });
 
-      console.log('Nuevas citas a agregar:', newCitas);
-      const updatedCitas = [...prevCitas, ...newCitas];
       await updateDoc(userRef, { Citas: updatedCitas });
 
-      console.log('Datos actualizados en Firestore:', updatedCitas);
+      console.log('Citas actualizadas en Firestore:', updatedCitas);
       alert('¡Formulario enviado exitosamente!');
       setFormData({
         name: '',
@@ -254,7 +257,11 @@ const Therapy = () => {
           <h3>¿Qué día y a qué horas quieres tu cita?</h3>
         </div>
         <div className="calendar-cont">
-          <Calendar collection="users" onDateSelection={handleDateSelection} />
+          <Calendar
+            collection="users"
+            onDateSelection={handleDateSelection}
+            therapyType={formData.therapyType}
+          />
           {showAppointmentError && (
             <div className="appointment-error">
               <h5 className="error-text">Por favor, selecciona al menos una cita.</h5>

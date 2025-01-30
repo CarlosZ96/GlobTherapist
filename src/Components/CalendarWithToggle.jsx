@@ -14,7 +14,7 @@ import useMonthData from '../hooks/useMonthData';
 import User from '../img/user.png';
 import '../stylesheets/month.css';
 
-const Calendar = ({ collection: collectionName, onDateSelection }) => { // <-- Cambia el nombre de la prop para evitar conflicto
+const Calendar = ({ collection: collectionName, onDateSelection, therapyType }) => {
   const {
     days, loading, monthName, changeMonth, monthOffset,
   } = useMonthData();
@@ -80,50 +80,36 @@ const Calendar = ({ collection: collectionName, onDateSelection }) => { // <-- C
     }
 
     if (collectionName === 'users') {
-      const formattedData = selectedDay.map(({ date, monthOffset }) => {
-        const monthIndex = new Date().getMonth() + monthOffset;
-        const calculatedMonthName = new Date(2023, monthIndex).toLocaleString('es-ES', { month: 'long' });
-
-        return {
-          date,
-          month: calculatedMonthName,
-          time: formatTime(selectedTime),
-        };
-      });
-
-      console.log('Datos formateados para citas:', formattedData);
-      onDateSelection(formattedData);
-      alert('Citas confirmadas correctamente.');
-      setIsConfirmed(true);
-    } else if (collectionName === 'pros') {
       try {
-        const userRef = doc(db, collectionName, currentUser.uid);
+        const userRef = doc(db, 'users', currentUser.uid);
         const userSnap = await getDoc(userRef);
 
         if (!userSnap.exists()) {
-          console.error(`El usuario no existe en la colección ${collectionName}.`);
+          console.error('El usuario no existe en Firestore.');
           return;
         }
 
         const userData = userSnap.data();
-        const newHorarios = selectedDay.map(({ date, monthOffset }) => {
+        const prevCitas = userData.Citas || [];
+
+        const newCitas = selectedDay.map(({ date, monthOffset }) => {
           const monthIndex = new Date().getMonth() + monthOffset;
           const calculatedMonthName = new Date(2023, monthIndex).toLocaleString('es-ES', { month: 'long' });
 
           return {
             date,
             month: calculatedMonthName,
-            timeSlots: Array.from(
-              { length: endTime - startTime },
-              (_, i) => `${formatTime(startTime + i)}-${formatTime(startTime + i + 1)}`,
-            ),
+            time: formatTime(selectedTime),
+            therapyType,
+            status: 'pending',
           };
         });
-
-        const updatedHorarios = [...(userData.horarios || []), ...newHorarios];
-        await updateDoc(userRef, { horarios: updatedHorarios });
-        console.log('Horarios confirmados:', updatedHorarios);
+        const updatedCitas = [...prevCitas, ...newCitas];
+        await updateDoc(userRef, { Citas: updatedCitas });
+        console.log('Citas creadas en Firestore:', updatedCitas);
+        alert('Citas confirmadas correctamente.');
         setIsConfirmed(true);
+        onDateSelection(updatedCitas);
       } catch (error) {
         console.error('Error al confirmar horarios:', error);
       }
@@ -416,6 +402,7 @@ const Calendar = ({ collection: collectionName, onDateSelection }) => { // <-- C
 Calendar.propTypes = {
   collection: PropTypes.oneOf(['users', 'pros']).isRequired,
   onDateSelection: PropTypes.func,
+  therapyType: PropTypes.string,
 };
 
 export default Calendar;
