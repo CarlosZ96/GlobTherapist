@@ -25,6 +25,7 @@ const Calendar = ({ collection: collectionName, onDateSelection }) => { // <-- C
   const [selectedTime, setSelectedTime] = useState(7);
   const [selectedDay, setSelectedDay] = useState([]);
   const [isConfirmed, setIsConfirmed] = useState(false);
+  const [availablePros, setAvailablePros] = useState([]);
 
   if (loading) {
     return <div>Loading...</div>;
@@ -151,7 +152,7 @@ const Calendar = ({ collection: collectionName, onDateSelection }) => { // <-- C
   };
 
   const filterDates = async () => {
-    console.log('Ejecutando filterDates...'); // Verificar si la función se llama
+    console.log('Ejecutando filterDates...');
 
     try {
       if (!currentUser) {
@@ -159,7 +160,6 @@ const Calendar = ({ collection: collectionName, onDateSelection }) => { // <-- C
         return;
       }
 
-      // Obtener el usuario logueado y su primera cita
       const userDocRef = doc(db, 'users', currentUser.uid);
       const userDocSnap = await getDoc(userDocRef);
 
@@ -169,7 +169,7 @@ const Calendar = ({ collection: collectionName, onDateSelection }) => { // <-- C
       }
 
       const userData = userDocSnap.data();
-      console.log('Datos del usuario:', userData); // Verificar datos del usuario
+      console.log('Datos del usuario:', userData);
 
       const firstAppointment = userData.Citas?.[0];
       if (!firstAppointment) {
@@ -178,23 +178,20 @@ const Calendar = ({ collection: collectionName, onDateSelection }) => { // <-- C
       }
 
       const { month, date, time, therapyType } = firstAppointment;
-      console.log('Cita del usuario:', { month, date, time, therapyType }); // Verificar datos de la cita
+      console.log('Cita del usuario:', { month, date, time, therapyType });
 
-      // Verificar si therapyType está definido
       if (!therapyType) {
         console.error('No se encontró el tipo de terapia en la cita.');
         return;
       }
 
-      // Normalizar therapyType (eliminar tildes y convertir a minúsculas)
       const normalizedTherapyType = removeAccents(therapyType);
       console.log('TherapyType normalizado:', normalizedTherapyType);
 
-      // Obtener todos los profesionales
       const prosCollectionRef = collection(db, 'pros');
       const prosQuerySnapshot = await getDocs(prosCollectionRef);
 
-      console.log('Número de profesionales encontrados:', prosQuerySnapshot.size); // Verificar cantidad de profesionales
+      console.log('Número de profesionales encontrados:', prosQuerySnapshot.size);
 
       const matchingPros = [];
 
@@ -202,11 +199,9 @@ const Calendar = ({ collection: collectionName, onDateSelection }) => { // <-- C
         const proData = proDoc.data();
         const { horarios, terapias, Nombre } = proData;
 
-        console.log('Profesional:', Nombre); // Verificar nombre del profesional
+        console.log('Profesional:', Nombre);
 
-        // Verificar si el pro ofrece la terapia requerida
         if (terapias && terapias.length > 0) {
-          // Normalizar las terapias del profesional (eliminar tildes y convertir a minúsculas)
           const normalizedTerapias = terapias.map((t) => removeAccents(t));
           console.log('Terapias del profesional normalizadas:', normalizedTerapias);
 
@@ -214,11 +209,9 @@ const Calendar = ({ collection: collectionName, onDateSelection }) => { // <-- C
           console.log('¿El profesional ofrece la terapia requerida?', offersTherapy);
 
           if (offersTherapy) {
-            console.log('El profesional ofrece la terapia requerida.'); // Verificar terapia
+            console.log('El profesional ofrece la terapia requerida.');
 
-            // Filtrar por disponibilidad en el horario requerido
             const hasMatchingSchedule = horarios?.some((horario) => {
-              // Verificar si el mes y el día coinciden
               const isMonthMatch = horario.month?.toLowerCase() === month?.toLowerCase();
               const isDateMatch = horario.date === date;
 
@@ -231,9 +224,7 @@ const Calendar = ({ collection: collectionName, onDateSelection }) => { // <-- C
                 isDateMatch,
               });
 
-              // Verificar si el time del usuario coincide con algún timeSlot del profesional
               const isTimeMatch = horario.timeSlots?.some((timeSlot) => {
-                // Extraer la hora de inicio del timeSlot (por ejemplo, "8:00am-9:00am" -> "8:00am")
                 const [startTimeStr] = timeSlot.split('-');
 
                 console.log('Comparando tiempos:', {
@@ -248,7 +239,6 @@ const Calendar = ({ collection: collectionName, onDateSelection }) => { // <-- C
 
               console.log('Resultado de la comparación de tiempo:', isTimeMatch);
 
-              // Mostrar todos los datos comparados
               console.log('Comparativo detallado:', {
                 userDate: date,
                 proDate: horario.date,
@@ -263,20 +253,21 @@ const Calendar = ({ collection: collectionName, onDateSelection }) => { // <-- C
             });
 
             if (hasMatchingSchedule) {
-              console.log('Profesional coincide:', Nombre); // Verificar coincidencia
+              console.log('Profesional coincide:', Nombre);
               matchingPros.push(Nombre);
             } else {
-              console.log('Profesional no coincide:', Nombre); // Verificar no coincidencia
+              console.log('Profesional no coincide:', Nombre);
             }
           } else {
-            console.log('El profesional no ofrece la terapia requerida:', Nombre); // Verificar terapia no ofrecida
+            console.log('El profesional no ofrece la terapia requerida:', Nombre);
           }
         } else {
-          console.log('El profesional no tiene terapias definidas:', Nombre); // Verificar si no hay terapias
+          console.log('El profesional no tiene terapias definidas:', Nombre);
         }
       });
 
       console.log('Profesionales disponibles:', matchingPros);
+      setAvailablePros(matchingPros); // Actualizar el estado con los profesionales disponibles
     } catch (error) {
       console.error('Error al obtener los profesionales:', error);
     }
@@ -408,9 +399,14 @@ const Calendar = ({ collection: collectionName, onDateSelection }) => { // <-- C
           </button>
         </div>
         <div className="pro-img-def">
-          <div className="user-image-comt">
-            <img src={User} alt="user" className="pro-img" />
-          </div>
+          {availablePros.map((pro, index) => (
+            <div key={index} className="user-info-comt">
+              <div className="user-image-comt">
+                <img src={User} alt="user" className="pro-img" />
+              </div>
+              <h3>{pro}</h3>
+            </div>
+          ))}
         </div>
       </div>
     </div>
