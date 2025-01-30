@@ -1,22 +1,20 @@
-/* eslint-disable react/require-default-props */
-/* eslint-disable react/no-unused-prop-types */
-/* eslint-disable no-plusplus */
-/* eslint-disable no-await-in-loop */
-/* eslint-disable no-restricted-syntax */
+/* eslint-disable object-curly-newline */
 /* eslint-disable no-shadow */
 /* eslint-disable max-len */
-/* eslint-disable no-nested-ternary */
 /* eslint-disable react/no-array-index-key */
+/* eslint-disable react/require-default-props */
 import React, { useState } from 'react';
 import PropTypes from 'prop-types';
-import { doc, getDoc, updateDoc } from 'firebase/firestore';
+import {
+  doc, getDoc, updateDoc, getDocs, collection, // <-- Asegúrate de importar `collection`
+} from 'firebase/firestore';
 import { db } from '../firebase';
 import { useAuth } from '../AuthContext';
 import useMonthData from '../hooks/useMonthData';
 import User from '../img/user.png';
 import '../stylesheets/month.css';
 
-const Calendar = ({ collection, onDateSelection }) => {
+const Calendar = ({ collection: collectionName, onDateSelection }) => { // <-- Cambia el nombre de la prop para evitar conflicto
   const {
     days, loading, monthName, changeMonth, monthOffset,
   } = useMonthData();
@@ -31,8 +29,9 @@ const Calendar = ({ collection, onDateSelection }) => {
   if (loading) {
     return <div>Loading...</div>;
   }
+
   const handleDayClick = (day) => {
-    if (collection === 'users') {
+    if (collectionName === 'users') {
       setSelectedDay([{ date: day.date, monthOffset }]);
     } else {
       setSelectedDay((prev) => {
@@ -42,28 +41,31 @@ const Calendar = ({ collection, onDateSelection }) => {
       });
     }
   };
+
   const incrementTime = (setter, current) => {
-    if (collection === 'pros') {
+    if (collectionName === 'pros') {
       if (setter === setStartTime && current < endTime - 1) setter(current + 1);
       if (setter === setEndTime && current < 22) setter(current + 1);
-    } else if (collection === 'users' && selectedTime < 22) {
+    } else if (collectionName === 'users' && selectedTime < 22) {
       setSelectedTime(selectedTime + 1);
     }
   };
 
   const decrementTime = (setter, current) => {
-    if (collection === 'pros') {
+    if (collectionName === 'pros') {
       if (setter === setStartTime && current > 8) setter(current - 1);
       if (setter === setEndTime && current > startTime + 1) setter(current - 1);
-    } else if (collection === 'users' && selectedTime > 7) {
+    } else if (collectionName === 'users' && selectedTime > 7) {
       setSelectedTime(selectedTime - 1);
     }
   };
+
   const formatTime = (hour) => {
     const period = hour >= 12 ? 'pm' : 'am';
     const formattedHour = hour > 12 ? hour - 12 : hour;
     return `${formattedHour}:00${period}`;
   };
+
   const formatTimeRange = (hour) => {
     const start = `${hour > 12 ? hour - 12 : hour}:00${hour >= 12 ? 'pm' : 'am'}`;
     const end = `${hour > 12 ? hour - 12 : hour}:40${hour >= 12 ? 'pm' : 'am'}`;
@@ -76,7 +78,7 @@ const Calendar = ({ collection, onDateSelection }) => {
       return;
     }
 
-    if (collection === 'users') {
+    if (collectionName === 'users') {
       const formattedData = selectedDay.map(({ date, monthOffset }) => {
         const monthIndex = new Date().getMonth() + monthOffset;
         const calculatedMonthName = new Date(2023, monthIndex).toLocaleString('es-ES', { month: 'long' });
@@ -92,13 +94,13 @@ const Calendar = ({ collection, onDateSelection }) => {
       onDateSelection(formattedData);
       alert('Citas confirmadas correctamente.');
       setIsConfirmed(true);
-    } else if (collection === 'pros') {
+    } else if (collectionName === 'pros') {
       try {
-        const userRef = doc(db, collection, currentUser.uid);
+        const userRef = doc(db, collectionName, currentUser.uid);
         const userSnap = await getDoc(userRef);
 
         if (!userSnap.exists()) {
-          console.error(`El usuario no existe en la colección ${collection}.`);
+          console.error(`El usuario no existe en la colección ${collectionName}.`);
           return;
         }
 
@@ -126,20 +128,157 @@ const Calendar = ({ collection, onDateSelection }) => {
       }
     }
   };
+
   const handleEditHours = async () => {
     try {
-      const userRef = doc(db, collection, currentUser.uid);
+      const userRef = doc(db, collectionName, currentUser.uid);
       const userSnap = await getDoc(userRef);
       if (!userSnap.exists()) {
-        console.log(`El usuario no existe en la colección ${collection}.`);
+        console.log(`El usuario no existe en la colección ${collectionName}.`);
         return;
       }
-      const horariosKey = collection === 'pros' ? 'horarios' : 'Citas';
+      const horariosKey = collectionName === 'pros' ? 'horarios' : 'Citas';
       await updateDoc(userRef, { [horariosKey]: [] });
       console.log(`${horariosKey} eliminados.`);
       setIsConfirmed(false);
     } catch (error) {
       console.error('Error al eliminar horarios:', error);
+    }
+  };
+
+  const removeAccents = (str) => {
+    return str.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+  };
+
+  const filterDates = async () => {
+    console.log('Ejecutando filterDates...'); // Verificar si la función se llama
+
+    try {
+      if (!currentUser) {
+        console.error('No hay usuario logueado.');
+        return;
+      }
+
+      // Obtener el usuario logueado y su primera cita
+      const userDocRef = doc(db, 'users', currentUser.uid);
+      const userDocSnap = await getDoc(userDocRef);
+
+      if (!userDocSnap.exists()) {
+        console.error('Usuario no encontrado en Firestore.');
+        return;
+      }
+
+      const userData = userDocSnap.data();
+      console.log('Datos del usuario:', userData); // Verificar datos del usuario
+
+      const firstAppointment = userData.Citas?.[0];
+      if (!firstAppointment) {
+        console.log('El usuario no tiene citas.');
+        return;
+      }
+
+      const { month, date, time, therapyType } = firstAppointment;
+      console.log('Cita del usuario:', { month, date, time, therapyType }); // Verificar datos de la cita
+
+      // Verificar si therapyType está definido
+      if (!therapyType) {
+        console.error('No se encontró el tipo de terapia en la cita.');
+        return;
+      }
+
+      // Normalizar therapyType (eliminar tildes y convertir a minúsculas)
+      const normalizedTherapyType = removeAccents(therapyType);
+      console.log('TherapyType normalizado:', normalizedTherapyType);
+
+      // Obtener todos los profesionales
+      const prosCollectionRef = collection(db, 'pros');
+      const prosQuerySnapshot = await getDocs(prosCollectionRef);
+
+      console.log('Número de profesionales encontrados:', prosQuerySnapshot.size); // Verificar cantidad de profesionales
+
+      const matchingPros = [];
+
+      prosQuerySnapshot.forEach((proDoc) => {
+        const proData = proDoc.data();
+        const { horarios, terapias, Nombre } = proData;
+
+        console.log('Profesional:', Nombre); // Verificar nombre del profesional
+
+        // Verificar si el pro ofrece la terapia requerida
+        if (terapias && terapias.length > 0) {
+          // Normalizar las terapias del profesional (eliminar tildes y convertir a minúsculas)
+          const normalizedTerapias = terapias.map((t) => removeAccents(t));
+          console.log('Terapias del profesional normalizadas:', normalizedTerapias);
+
+          const offersTherapy = normalizedTerapias.includes(normalizedTherapyType);
+          console.log('¿El profesional ofrece la terapia requerida?', offersTherapy);
+
+          if (offersTherapy) {
+            console.log('El profesional ofrece la terapia requerida.'); // Verificar terapia
+
+            // Filtrar por disponibilidad en el horario requerido
+            const hasMatchingSchedule = horarios?.some((horario) => {
+              // Verificar si el mes y el día coinciden
+              const isMonthMatch = horario.month?.toLowerCase() === month?.toLowerCase();
+              const isDateMatch = horario.date === date;
+
+              console.log('Comparando horario:', {
+                horarioMonth: horario.month,
+                userMonth: month,
+                isMonthMatch,
+                horarioDate: horario.date,
+                userDate: date,
+                isDateMatch,
+              });
+
+              // Verificar si el time del usuario coincide con algún timeSlot del profesional
+              const isTimeMatch = horario.timeSlots?.some((timeSlot) => {
+                // Extraer la hora de inicio del timeSlot (por ejemplo, "8:00am-9:00am" -> "8:00am")
+                const [startTimeStr] = timeSlot.split('-');
+
+                console.log('Comparando tiempos:', {
+                  timeSlot,
+                  startTimeStr,
+                  userTime: time,
+                  isMatch: startTimeStr === time,
+                });
+
+                return startTimeStr === time;
+              });
+
+              console.log('Resultado de la comparación de tiempo:', isTimeMatch);
+
+              // Mostrar todos los datos comparados
+              console.log('Comparativo detallado:', {
+                userDate: date,
+                proDate: horario.date,
+                userTime: time,
+                proTimeSlots: horario.timeSlots,
+                isMonthMatch,
+                isDateMatch,
+                isTimeMatch,
+              });
+
+              return isMonthMatch && isDateMatch && isTimeMatch;
+            });
+
+            if (hasMatchingSchedule) {
+              console.log('Profesional coincide:', Nombre); // Verificar coincidencia
+              matchingPros.push(Nombre);
+            } else {
+              console.log('Profesional no coincide:', Nombre); // Verificar no coincidencia
+            }
+          } else {
+            console.log('El profesional no ofrece la terapia requerida:', Nombre); // Verificar terapia no ofrecida
+          }
+        } else {
+          console.log('El profesional no tiene terapias definidas:', Nombre); // Verificar si no hay terapias
+        }
+      });
+
+      console.log('Profesionales disponibles:', matchingPros);
+    } catch (error) {
+      console.error('Error al obtener los profesionales:', error);
     }
   };
 
@@ -191,7 +330,7 @@ const Calendar = ({ collection, onDateSelection }) => {
         </div>
         <div className="Choose-Day-btns-cont">
           <h3 className="Choose-Day-txt">
-            {collection === 'users'
+            {collectionName === 'users'
               ? 'Elige el día de tu valoración.'
               : '¿Qué días estarás disponible para trabajar?'}
           </h3>
@@ -209,7 +348,7 @@ const Calendar = ({ collection, onDateSelection }) => {
       </div>
       <hr className="date-blue-line" />
       <div className="Hours-cont">
-        {collection === 'pros' ? (
+        {collectionName === 'pros' ? (
           <div className="Hours-selector">
             <div className="Time-selector">
               <h3>De:</h3>
@@ -245,7 +384,7 @@ const Calendar = ({ collection, onDateSelection }) => {
             onClick={handleConfirmHours}
             disabled={isConfirmed}
           >
-            <h3 disabled={isConfirmed}>{collection === 'pros' ? 'Confirmar mis horarios' : 'Confirmar hora'}</h3>
+            <h3 disabled={isConfirmed}>{collectionName === 'pros' ? 'Confirmar mis horarios' : 'Confirmar hora'}</h3>
           </button>
           {isConfirmed && (
             <button type="button" className="Edit-Hours" onClick={handleEditHours}>
@@ -257,12 +396,13 @@ const Calendar = ({ collection, onDateSelection }) => {
       <hr className="date-blue-line" />
       <div
         className="Pros-cont"
-        style={{ display: collection === 'pros' ? 'none' : 'block' }}
+        style={{ display: collectionName === 'pros' ? 'none' : 'block' }}
       >
         <div className="Pros-btn-cont">
           <button
             type="button"
             disabled={!isConfirmed}
+            onClick={filterDates}
           >
             <h3>Ver pros</h3>
           </button>
