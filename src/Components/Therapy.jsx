@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { getAuth } from 'firebase/auth';
 import {
-  doc, getDoc, collection, updateDoc,
+  doc, getDoc, collection, updateDoc, getDocs,
 } from 'firebase/firestore';
 import { db } from '../firebase';
 import Calendar from './CalendarWithToggle';
@@ -14,11 +14,16 @@ const Therapy = () => {
   const usersCollection = collection(db, 'users');
   const [selectedAppointments, setSelectedAppointments] = useState([]);
   const [showAppointmentError, setShowAppointmentError] = useState(false);
+  const [selectedPro, setSelectedPro] = useState(null);
 
   const handleDateSelection = (appointments) => {
     console.log('Citas seleccionadas recibidas:', appointments);
     setSelectedAppointments(appointments);
     setShowAppointmentError(false);
+  };
+
+  const handleProSelection = (proName) => {
+    setSelectedPro(proName);
   };
 
   const [formData, setFormData] = useState({
@@ -107,7 +112,13 @@ const Therapy = () => {
       return;
     }
 
+    if (!selectedPro) {
+      alert('Por favor, selecciona un profesional.');
+      return;
+    }
+
     try {
+      // Actualizar las citas del usuario
       const userRef = doc(db, 'users', auth.currentUser.uid);
       const userSnap = await getDoc(userRef);
 
@@ -119,7 +130,6 @@ const Therapy = () => {
       const userData = userSnap.data();
       const prevCitas = userData.Citas || [];
 
-      // Actualizar las citas seleccionadas con los datos del formulario
       const updatedCitas = prevCitas.map((cita) => {
         if (selectedAppointments.some((app) => app.date === cita.date && app.time === cita.time)) {
           return {
@@ -129,13 +139,38 @@ const Therapy = () => {
             email: formData.email,
             therapyType: formData.therapyType,
             description: formData.description,
-            status: 'confirmed', // Cambiar el estado de la cita a confirmada
+            status: 'confirmed',
           };
         }
         return cita;
       });
 
       await updateDoc(userRef, { Citas: updatedCitas });
+
+      const prosCollectionRef = collection(db, 'pros');
+      const prosQuerySnapshot = await getDocs(prosCollectionRef);
+
+      prosQuerySnapshot.forEach(async (proDoc) => {
+        const proData = proDoc.data();
+        if (proData.Nombre === selectedPro) {
+          const proRef = doc(db, 'pros', proDoc.id);
+          const prevMisCitas = proData.MisCitas || [];
+
+          const newMisCitas = selectedAppointments.map((app) => ({
+            date: app.date,
+            time: app.time,
+            month: app.month,
+            therapyType: formData.therapyType,
+            description: formData.description,
+            userName: formData.name,
+            userEmail: formData.email,
+            userPhone: formData.phone,
+            status: 'pending',
+          }));
+          const updatedMisCitas = [...prevMisCitas, ...newMisCitas];
+          await updateDoc(proRef, { MisCitas: updatedMisCitas });
+        }
+      });
 
       console.log('Citas actualizadas en Firestore:', updatedCitas);
       alert('¡Formulario enviado exitosamente!');
@@ -147,13 +182,13 @@ const Therapy = () => {
         description: '',
       });
       setSelectedAppointments([]);
+      setSelectedPro(null);
       setShowAppointmentError(false);
     } catch (error) {
       console.error('Error al actualizar los datos en Firestore:', error);
       alert('Hubo un error al enviar el formulario. Por favor, inténtalo de nuevo.');
     }
   };
-
   useEffect(() => {
     const fetchUserData = async () => {
       if (user) {
@@ -261,6 +296,7 @@ const Therapy = () => {
             collection="users"
             onDateSelection={handleDateSelection}
             therapyType={formData.therapyType}
+            onProSelection={handleProSelection}
           />
           {showAppointmentError && (
             <div className="appointment-error">

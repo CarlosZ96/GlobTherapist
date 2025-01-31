@@ -14,7 +14,9 @@ import useMonthData from '../hooks/useMonthData';
 import User from '../img/user.png';
 import '../stylesheets/month.css';
 
-const Calendar = ({ collection: collectionName, onDateSelection, therapyType }) => {
+const Calendar = ({
+  collection: collectionName, onDateSelection, therapyType, onProSelection,
+}) => {
   const {
     days, loading, monthName, changeMonth, monthOffset,
   } = useMonthData();
@@ -26,10 +28,16 @@ const Calendar = ({ collection: collectionName, onDateSelection, therapyType }) 
   const [selectedDay, setSelectedDay] = useState([]);
   const [isConfirmed, setIsConfirmed] = useState(false);
   const [availablePros, setAvailablePros] = useState([]);
+  const [selectedPro, setSelectedPro] = useState(null);
 
   if (loading) {
     return <div>Loading...</div>;
   }
+
+  const handleProClick = (proName) => {
+    setSelectedPro((prev) => (prev === proName ? null : proName));
+    onProSelection(proName);
+  };
 
   const handleDayClick = (day) => {
     if (collectionName === 'users') {
@@ -357,12 +365,17 @@ const Calendar = ({ collection: collectionName, onDateSelection, therapyType }) 
         </div>
         <div className="pro-img-def">
           {availablePros.map((pro, index) => (
-            <div key={index} className="user-info-comt">
+            <button
+              key={index}
+              type="button"
+              className={`user-info-comt ${selectedPro === pro ? 'active' : 'inactive'}`}
+              onClick={() => handleProClick(pro)}
+            >
               <div className="user-image-comt">
                 <img src={User} alt="user" className="pro-img" />
               </div>
               <h3>{pro}</h3>
-            </div>
+            </button>
           ))}
         </div>
       </div>
@@ -374,6 +387,7 @@ Calendar.propTypes = {
   collection: PropTypes.oneOf(['users', 'pros']).isRequired,
   onDateSelection: PropTypes.func,
   therapyType: PropTypes.string,
+  onProSelection: PropTypes.func,
 };
 
 export default Calendar;

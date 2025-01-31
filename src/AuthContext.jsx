@@ -1,11 +1,10 @@
-/* eslint-disable no-shadow */
 import React, {
   createContext, useContext, useState, useEffect, useMemo,
 } from 'react';
 import { onAuthStateChanged, signInWithEmailAndPassword, signOut } from 'firebase/auth';
 import PropTypes from 'prop-types';
 import {
-  doc, getDoc, collection, getDocs,
+  doc, getDoc, collection, getDocs, updateDoc,
 } from 'firebase/firestore';
 import { auth, db } from './firebase';
 
@@ -21,26 +20,52 @@ export const AuthProvider = ({ children }) => {
   const [isAdmin, setIsAdmin] = useState(false);
   const [loading, setLoading] = useState(true);
 
+  // Función para cargar los datos del usuario
+  const fetchUserData = async (user) => {
+    try {
+      const userDoc = await getDoc(doc(db, 'users', user.uid));
+      if (userDoc.exists()) {
+        const data = userDoc.data();
+        setUserData(data);
+        setIsAdmin(data.role === 'admin');
+      } else {
+        console.error('No user data found in Firestore');
+      }
+    } catch (error) {
+      console.error('Error fetching user data: ', error);
+    }
+  };
+
+  // Función para cargar los datos del profesional
+  const fetchProData = async (user) => {
+    try {
+      const proDoc = await getDoc(doc(db, 'pros', user.uid));
+      if (proDoc.exists()) {
+        setCurrentPro(proDoc.data());
+      }
+    } catch (error) {
+      console.error('Error fetching pro data: ', error);
+    }
+  };
+
+  // Función para cargar todos los profesionales
+  const fetchAllPros = async () => {
+    try {
+      const prosCollection = await getDocs(collection(db, 'pros'));
+      const prosData = prosCollection.docs.map((proDoc) => ({ id: proDoc.id, ...proDoc.data() }));
+      setPros(prosData);
+    } catch (error) {
+      console.error('Error fetching pros collection:', error);
+    }
+  };
+
+  // Efecto para manejar la autenticación
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
       setCurrentUser(user);
       if (user) {
-        try {
-          const userDoc = await getDoc(doc(db, 'users', user.uid));
-          if (userDoc.exists()) {
-            const data = userDoc.data();
-            setUserData(data);
-            setIsAdmin(data.role === 'admin');
-          } else {
-            console.error('No user data found in Firestore');
-          }
-          const proDoc = await getDoc(doc(db, 'pros', user.uid));
-          if (proDoc.exists()) {
-            setCurrentPro(proDoc.data());
-          }
-        } catch (error) {
-          console.error('Error fetching user data: ', error);
-        }
+        await fetchUserData(user);
+        await fetchProData(user);
       } else {
         setUserData(null);
         setCurrentPro(null);
@@ -51,19 +76,23 @@ export const AuthProvider = ({ children }) => {
     return unsubscribe;
   }, []);
 
+  // Efecto para cargar todos los profesionales al inicio
   useEffect(() => {
-    const fetchPros = async () => {
-      try {
-        const prosCollection = await getDocs(collection(db, 'pros'));
-        const prosData = prosCollection.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
-        setPros(prosData);
-      } catch (error) {
-        console.error('Error fetching pros collection:', error);
-      }
-    };
-
-    fetchPros();
+    fetchAllPros();
   }, []);
+
+  // Método para actualizar las citas del usuario
+  const updateUserCitas = async (citas) => {
+    if (!currentUser) return;
+    const userRef = doc(db, 'users', currentUser.uid);
+    await updateDoc(userRef, { Citas: citas });
+  };
+
+  // Método para actualizar las citas del profesional
+  const updateProMisCitas = async (proId, misCitas) => {
+    const proRef = doc(db, 'pros', proId);
+    await updateDoc(proRef, { MisCitas: misCitas });
+  };
 
   const login = (email, password) => signInWithEmailAndPassword(auth, email, password);
 
@@ -77,6 +106,8 @@ export const AuthProvider = ({ children }) => {
     isAdmin,
     login,
     logout,
+    updateUserCitas,
+    updateProMisCitas,
   }), [currentUser, userData, currentPro, pros, isAdmin]);
 
   return (
