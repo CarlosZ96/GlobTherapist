@@ -15,8 +15,13 @@ const Calendar = ({
   collection: collectionName, onDateSelection, therapyType, onProSelection,
 }) => {
   const {
-    days, loading, monthName, changeMonth, monthOffset,
+    days,
+    loading,
+    monthName,
+    changeMonth,
+    monthOffset,
   } = useMonthData();
+
   console.log('Renderizando Calendar');
   const daysOfWeek = ['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom'];
   const { currentUser } = useAuth();
@@ -243,25 +248,21 @@ const Calendar = ({
   return (
     <div className="DynamiCanlendar-cont">
       <div className="calendar-month-cont">
-        {monthOffset > -1 && (
-          <button
-            className="calendar-month-btn"
-            type="button"
-            onClick={() => changeMonth(-1)}
-          >
-            ←
-          </button>
-        )}
+        <button
+          className="calendar-month-btn"
+          type="button"
+          onClick={() => changeMonth(-1)}
+        >
+          ←
+        </button>
         <h2 className="calendar-title">{monthName}</h2>
-        {monthOffset < 1 && (
-          <button
-            className="calendar-month-btn"
-            type="button"
-            onClick={() => changeMonth(1)}
-          >
-            →
-          </button>
-        )}
+        <button
+          className="calendar-month-btn"
+          type="button"
+          onClick={() => changeMonth(1)}
+        >
+          →
+        </button>
       </div>
       <hr className="date-blue-line" />
       <div className="calendar-week-cont">
