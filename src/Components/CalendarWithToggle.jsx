@@ -1,12 +1,9 @@
-/* eslint-disable object-curly-newline */
-/* eslint-disable no-shadow */
-/* eslint-disable max-len */
 /* eslint-disable react/no-array-index-key */
-/* eslint-disable react/require-default-props */
+/* eslint-disable no-shadow */
 import React, { useState } from 'react';
 import PropTypes from 'prop-types';
 import {
-  doc, getDoc, updateDoc, getDocs, collection, // <-- Asegúrate de importar `collection`
+  doc, getDoc, updateDoc, getDocs, collection,
 } from 'firebase/firestore';
 import { db } from '../firebase';
 import { useAuth } from '../AuthContext';
@@ -170,8 +167,12 @@ const Calendar = ({
         return;
       }
 
-      const { month, date, time, therapyType } = firstAppointment;
-      console.log('Cita del usuario:', { month, date, time, therapyType });
+      const {
+        month, date, time, therapyType,
+      } = firstAppointment;
+      console.log('Cita del usuario:', {
+        month, date, time, therapyType,
+      });
 
       if (!therapyType) {
         console.error('No se encontró el tipo de terapia en la cita.');
@@ -388,6 +389,12 @@ Calendar.propTypes = {
   onDateSelection: PropTypes.func,
   therapyType: PropTypes.string,
   onProSelection: PropTypes.func,
+};
+
+Calendar.defaultProps = {
+  onDateSelection: () => { },
+  therapyType: () => { },
+  onProSelection: () => { },
 };
 
 export default Calendar;

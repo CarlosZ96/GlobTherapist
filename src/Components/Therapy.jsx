@@ -1,20 +1,25 @@
 /* eslint-disable no-unused-vars */
 import React, { useState, useEffect } from 'react';
 import { getAuth } from 'firebase/auth';
-import {
-  doc, getDoc, collection, updateDoc, getDocs,
-} from 'firebase/firestore';
-import { db } from '../firebase';
+import { doc, getDoc } from 'firebase/firestore';
+import { db } from '../firebase'; // Importa db desde tu archivo de configuración de Firebase
+import { useAuth } from '../AuthContext'; // Importa useAuth para acceder al contexto
 import Calendar from './CalendarWithToggle';
 import '../stylesheets/Therapy.css';
 
 const Therapy = () => {
   const auth = getAuth();
   const user = auth.currentUser;
-  const usersCollection = collection(db, 'users');
+  const {
+    currentUser,
+    updateUserCitas,
+    updateProMisCitas,
+    pros,
+  } = useAuth(); // Accede a las funciones y datos del AuthProvider
+
   const [selectedAppointments, setSelectedAppointments] = useState([]);
   const [showAppointmentError, setShowAppointmentError] = useState(false);
-  const [selectedPro, setSelectedPro] = useState(null);
+  const [selectedPro, setSelectedPro] = useState(null); // Estado para el profesional seleccionado
 
   const handleDateSelection = (appointments) => {
     console.log('Citas seleccionadas recibidas:', appointments);
@@ -23,7 +28,7 @@ const Therapy = () => {
   };
 
   const handleProSelection = (proName) => {
-    setSelectedPro(proName);
+    setSelectedPro(proName); // Actualiza el profesional seleccionado
   };
 
   const [formData, setFormData] = useState({
@@ -101,7 +106,7 @@ const Therapy = () => {
       return;
     }
 
-    if (!auth.currentUser) {
+    if (!currentUser) {
       console.error('Usuario no autenticado.');
       alert('Debes iniciar sesión para agendar una cita.');
       return;
@@ -119,60 +124,36 @@ const Therapy = () => {
 
     try {
       // Actualizar las citas del usuario
-      const userRef = doc(db, 'users', auth.currentUser.uid);
-      const userSnap = await getDoc(userRef);
+      const updatedCitas = selectedAppointments.map((app) => ({
+        ...app,
+        name: formData.name,
+        phone: formData.phone,
+        email: formData.email,
+        therapyType: formData.therapyType,
+        description: formData.description,
+        status: 'confirmed',
+      }));
 
-      if (!userSnap.exists()) {
-        console.error('El usuario no existe en Firestore.');
-        return;
+      await updateUserCitas(updatedCitas); // Usa la función del AuthProvider
+
+      // Actualizar las citas del profesional
+      const pro = pros.find((p) => p.Nombre === selectedPro);
+      if (pro) {
+        const newMisCitas = selectedAppointments.map((app) => ({
+          date: app.date,
+          time: app.time,
+          month: app.month,
+          therapyType: formData.therapyType,
+          description: formData.description,
+          userName: formData.name,
+          userEmail: formData.email,
+          userPhone: formData.phone,
+          status: 'pending',
+        }));
+
+        await updateProMisCitas(pro.id, newMisCitas); // Usa la función del AuthProvider
       }
 
-      const userData = userSnap.data();
-      const prevCitas = userData.Citas || [];
-
-      const updatedCitas = prevCitas.map((cita) => {
-        if (selectedAppointments.some((app) => app.date === cita.date && app.time === cita.time)) {
-          return {
-            ...cita,
-            name: formData.name,
-            phone: formData.phone,
-            email: formData.email,
-            therapyType: formData.therapyType,
-            description: formData.description,
-            status: 'confirmed',
-          };
-        }
-        return cita;
-      });
-
-      await updateDoc(userRef, { Citas: updatedCitas });
-
-      const prosCollectionRef = collection(db, 'pros');
-      const prosQuerySnapshot = await getDocs(prosCollectionRef);
-
-      prosQuerySnapshot.forEach(async (proDoc) => {
-        const proData = proDoc.data();
-        if (proData.Nombre === selectedPro) {
-          const proRef = doc(db, 'pros', proDoc.id);
-          const prevMisCitas = proData.MisCitas || [];
-
-          const newMisCitas = selectedAppointments.map((app) => ({
-            date: app.date,
-            time: app.time,
-            month: app.month,
-            therapyType: formData.therapyType,
-            description: formData.description,
-            userName: formData.name,
-            userEmail: formData.email,
-            userPhone: formData.phone,
-            status: 'pending',
-          }));
-          const updatedMisCitas = [...prevMisCitas, ...newMisCitas];
-          await updateDoc(proRef, { MisCitas: updatedMisCitas });
-        }
-      });
-
-      console.log('Citas actualizadas en Firestore:', updatedCitas);
       alert('¡Formulario enviado exitosamente!');
       setFormData({
         name: '',
@@ -189,6 +170,7 @@ const Therapy = () => {
       alert('Hubo un error al enviar el formulario. Por favor, inténtalo de nuevo.');
     }
   };
+
   useEffect(() => {
     const fetchUserData = async () => {
       if (user) {
