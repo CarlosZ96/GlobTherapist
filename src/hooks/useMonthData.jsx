@@ -12,6 +12,8 @@ const useMonthData = () => {
   const [currentDate, setCurrentDate] = useState(new Date());
   const [days, setDays] = useState([]);
   const [monthName, setMonthName] = useState('');
+  const [monthNumber, setMonthNumber] = useState(0);
+  const [monthOffset, setMonthOffset] = useState(0); // Nuevo estado para monthOffset
 
   useEffect(() => {
     const firstDayOfMonth = startOfMonth(currentDate);
@@ -28,7 +30,16 @@ const useMonthData = () => {
 
     // Formatear el nombre del mes en español y en minúsculas
     const formattedMonthName = format(currentDate, 'MMMM yyyy', { locale: es });
-    setMonthName(formattedMonthName.toLowerCase()); // Convertir a minúsculas
+    setMonthName(formattedMonthName.toLowerCase());
+
+    // Obtener el número del mes (0 = enero, 11 = diciembre)
+    setMonthNumber(currentDate.getMonth());
+
+    // Calcular el monthOffset
+    const now = new Date();
+    const offset = currentDate.getMonth() - now.getMonth()
+      + 12 * (currentDate.getFullYear() - now.getFullYear());
+    setMonthOffset(offset);
   }, [currentDate]);
 
   const changeMonth = (offset) => {
@@ -38,6 +49,8 @@ const useMonthData = () => {
   return {
     days,
     monthName,
+    monthNumber,
+    monthOffset, // Devolver monthOffset
     changeMonth,
   };
 };

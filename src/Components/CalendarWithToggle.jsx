@@ -18,8 +18,8 @@ const Calendar = ({
     days,
     loading,
     monthName,
+    monthOffset, // Usar monthOffset desde el hook
     changeMonth,
-    monthOffset,
   } = useMonthData();
 
   console.log('Renderizando Calendar');
@@ -109,7 +109,7 @@ const Calendar = ({
 
           return {
             date,
-            month: calculatedMonthName,
+            month: calculatedMonthName.toLowerCase(), // Asegurar que el mes esté en minúsculas
             time: formatTime(selectedTime),
             therapyType,
             status: 'pending',

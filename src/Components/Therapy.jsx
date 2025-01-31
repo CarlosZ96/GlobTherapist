@@ -1,9 +1,8 @@
-/* eslint-disable no-unused-vars */
 import React, { useState, useEffect } from 'react';
 import { getAuth } from 'firebase/auth';
 import { doc, getDoc } from 'firebase/firestore';
-import { db } from '../firebase'; // Importa db desde tu archivo de configuración de Firebase
-import { useAuth } from '../AuthContext'; // Importa useAuth para acceder al contexto
+import { db } from '../firebase';
+import { useAuth } from '../AuthContext';
 import Calendar from './CalendarWithToggle';
 import '../stylesheets/Therapy.css';
 
@@ -15,11 +14,11 @@ const Therapy = () => {
     updateUserCitas,
     updateProMisCitas,
     pros,
-  } = useAuth(); // Accede a las funciones y datos del AuthProvider
+  } = useAuth();
 
   const [selectedAppointments, setSelectedAppointments] = useState([]);
   const [showAppointmentError, setShowAppointmentError] = useState(false);
-  const [selectedPro, setSelectedPro] = useState(null); // Estado para el profesional seleccionado
+  const [selectedPro, setSelectedPro] = useState(null);
 
   const handleDateSelection = (appointments) => {
     console.log('Citas seleccionadas recibidas:', appointments);
@@ -28,7 +27,7 @@ const Therapy = () => {
   };
 
   const handleProSelection = (proName) => {
-    setSelectedPro(proName); // Actualiza el profesional seleccionado
+    setSelectedPro(proName);
   };
 
   const [formData, setFormData] = useState({
@@ -134,7 +133,7 @@ const Therapy = () => {
         status: 'confirmed',
       }));
 
-      await updateUserCitas(updatedCitas); // Usa la función del AuthProvider
+      await updateUserCitas(updatedCitas);
 
       // Actualizar las citas del profesional
       const pro = pros.find((p) => p.Nombre === selectedPro);
@@ -142,7 +141,7 @@ const Therapy = () => {
         const newMisCitas = selectedAppointments.map((app) => ({
           date: app.date,
           time: app.time,
-          month: app.month,
+          month: app.month.toLowerCase(), // Asegurarse de que el mes esté en minúsculas
           therapyType: formData.therapyType,
           description: formData.description,
           userName: formData.name,
@@ -151,7 +150,7 @@ const Therapy = () => {
           status: 'pending',
         }));
 
-        await updateProMisCitas(pro.id, newMisCitas); // Usa la función del AuthProvider
+        await updateProMisCitas(pro.id, newMisCitas);
       }
 
       alert('¡Formulario enviado exitosamente!');
