@@ -155,7 +155,6 @@ const Calendar = ({ collection: collectionName, onDateSelection, therapyType }) 
       }
 
       const userData = userDocSnap.data();
-      console.log('Datos del usuario:', userData);
 
       const firstAppointment = userData.Citas?.[0];
       if (!firstAppointment) {
@@ -172,12 +171,9 @@ const Calendar = ({ collection: collectionName, onDateSelection, therapyType }) 
       }
 
       const normalizedTherapyType = removeAccents(therapyType);
-      console.log('TherapyType normalizado:', normalizedTherapyType);
 
       const prosCollectionRef = collection(db, 'pros');
       const prosQuerySnapshot = await getDocs(prosCollectionRef);
-
-      console.log('Número de profesionales encontrados:', prosQuerySnapshot.size);
 
       const matchingPros = [];
 
@@ -185,45 +181,20 @@ const Calendar = ({ collection: collectionName, onDateSelection, therapyType }) 
         const proData = proDoc.data();
         const { horarios, terapias, Nombre } = proData;
 
-        console.log('Profesional:', Nombre);
-
         if (terapias && terapias.length > 0) {
           const normalizedTerapias = terapias.map((t) => removeAccents(t));
-          console.log('Terapias del profesional normalizadas:', normalizedTerapias);
-
           const offersTherapy = normalizedTerapias.includes(normalizedTherapyType);
           console.log('¿El profesional ofrece la terapia requerida?', offersTherapy);
-
           if (offersTherapy) {
             console.log('El profesional ofrece la terapia requerida.');
 
             const hasMatchingSchedule = horarios?.some((horario) => {
               const isMonthMatch = horario.month?.toLowerCase() === month?.toLowerCase();
               const isDateMatch = horario.date === date;
-
-              console.log('Comparando horario:', {
-                horarioMonth: horario.month,
-                userMonth: month,
-                isMonthMatch,
-                horarioDate: horario.date,
-                userDate: date,
-                isDateMatch,
-              });
-
               const isTimeMatch = horario.timeSlots?.some((timeSlot) => {
                 const [startTimeStr] = timeSlot.split('-');
-
-                console.log('Comparando tiempos:', {
-                  timeSlot,
-                  startTimeStr,
-                  userTime: time,
-                  isMatch: startTimeStr === time,
-                });
-
                 return startTimeStr === time;
               });
-
-              console.log('Resultado de la comparación de tiempo:', isTimeMatch);
 
               console.log('Comparativo detallado:', {
                 userDate: date,
@@ -253,7 +224,7 @@ const Calendar = ({ collection: collectionName, onDateSelection, therapyType }) 
       });
 
       console.log('Profesionales disponibles:', matchingPros);
-      setAvailablePros(matchingPros); // Actualizar el estado con los profesionales disponibles
+      setAvailablePros(matchingPros);
     } catch (error) {
       console.error('Error al obtener los profesionales:', error);
     }

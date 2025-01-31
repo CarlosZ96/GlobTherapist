@@ -346,3 +346,15 @@
 .pro-img {
     max-height: 80%;
 }
+
+.user-info-comt {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    height: 76%;
+    width: 100%;
+}
+
+.user-info-comt h3{
+    height: 10%;
+}
