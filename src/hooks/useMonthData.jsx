@@ -1,4 +1,3 @@
-/* eslint-disable max-len */
 import { useState, useEffect } from 'react';
 import { doc, getDoc, setDoc } from 'firebase/firestore';
 import { db } from '../firebase';
@@ -9,12 +8,11 @@ const getCurrentMonthDetails = (offset = 0) => {
   const year = now.getFullYear();
   const month = now.getMonth();
   const monthName = now.toLocaleString('default', { month: 'long' });
-
   return { year, month, monthName };
 };
 
 const getDaysInMonth = (year, month) => {
-  return new Date(year, month + 1, 0).getDate(); // Calcula el último día del mes
+  return new Date(year, month + 1, 0).getDate();
 };
 
 const getStartDayOfMonth = (year, month) => {
@@ -34,26 +32,24 @@ const useMonthData = () => {
     const fetchDays = async () => {
       setLoading(true);
       try {
-        const docRef = doc(db, 'days', monthName); // Documento con el nombre del mes
+        const docRef = doc(db, 'days', monthName);
         const docSnap = await getDoc(docRef);
 
         if (docSnap.exists()) {
-          // Si el documento existe, carga los días
           const fetchedDays = docSnap.data().days.map((day) => ({
             ...day,
-            active: day.active || false, // Asegura que todos los días tengan "active" definido
+            active: day.active || false,
           }));
           const paddedDays = Array(startDay).fill(null).concat(fetchedDays);
           setDays(paddedDays);
         } else {
-          // Si el documento no existe, crear uno vacío
           console.warn(`No se encontró el documento para ${monthName}`);
           const emptyDays = Array(daysInMonth).fill(null).map((_, index) => ({
             date: index + 1,
-            active: false, // Todos los días inactivos inicialmente
+            active: false,
           }));
 
-          await setDoc(docRef, { days: emptyDays }); // Crea el documento con los días vacíos
+          await setDoc(docRef, { days: emptyDays });
           const paddedDays = Array(startDay).fill(null).concat(emptyDays);
           setDays(paddedDays);
         }
@@ -64,25 +60,14 @@ const useMonthData = () => {
     };
 
     fetchDays();
-  }, [monthName]);
+  }, [monthName, startDay, daysInMonth]);
 
-  const toggleDayStatus = async (dayIndex) => {
-    const updatedDays = days.map((day, index) => (day && index === dayIndex ? { ...day, active: !day.active } : day));
-    setDays(updatedDays);
-
-    try {
-      await setDoc(doc(db, 'days', monthName), { days: updatedDays.filter(Boolean) });
-    } catch (error) {
-      console.error('Error actualizando Firestore:', error);
-    }
-  };
-
-  const changeMonth = (offset) => {
+  const changeMonth = ((offset) => {
     setMonthOffset((prev) => prev + offset);
-  };
+  });
 
   return {
-    days, loading, toggleDayStatus, monthName, changeMonth, monthOffset,
+    days, loading, monthName, changeMonth, monthOffset,
   };
 };
 

@@ -17,6 +17,7 @@ const Calendar = ({
   const {
     days, loading, monthName, changeMonth, monthOffset,
   } = useMonthData();
+  console.log('Renderizando Calendar');
   const daysOfWeek = ['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom'];
   const { currentUser } = useAuth();
   const [startTime, setStartTime] = useState(8);
