@@ -3,18 +3,22 @@ import React, { useState } from 'react';
 import PropTypes from 'prop-types';
 import { doc, setDoc } from 'firebase/firestore';
 import { createUserWithEmailAndPassword } from 'firebase/auth';
-import { auth, db } from '../firebase';
+import { auth, db, storage, ref, uploadBytes, getDownloadURL } from '../firebase';
 import '../stylesheets/windo.css';
 
 const CreatePro = ({ toggleCreatePro }) => {
   const [formData, setFormData] = useState({
     fullName: '',
+    username: '',
     document: { type: 'C.C', number: '' },
     email: '',
     phone: '',
     password: '',
     confirmPassword: '',
     therapies: [],
+    profileImage: null,
+    resume: null,
+    certifications: [],
   });
 
   const [errors, setErrors] = useState({});
@@ -23,7 +27,7 @@ const CreatePro = ({ toggleCreatePro }) => {
   const therapyOptions = ['Mental', 'Física', 'Ocupacional', 'Lenguaje'];
 
   const handleChange = (e) => {
-    const { name, value } = e.target;
+    const { name, value, files } = e.target;
     if (name === 'documentType' || name === 'documentNumber') {
       setFormData((prev) => ({
         ...prev,
@@ -32,6 +36,10 @@ const CreatePro = ({ toggleCreatePro }) => {
           [name === 'documentType' ? 'type' : 'number']: value,
         },
       }));
+    } else if (name === 'profileImage' || name === 'resume') {
+      setFormData((prev) => ({ ...prev, [name]: files[0] }));
+    } else if (name === 'certifications') {
+      setFormData((prev) => ({ ...prev, certifications: Array.from(files) }));
     } else {
       setFormData((prev) => ({ ...prev, [name]: value }));
     }
@@ -69,6 +77,12 @@ const CreatePro = ({ toggleCreatePro }) => {
     return validationErrors;
   };
 
+  const uploadFile = async (file, path) => {
+    const storageRef = ref(storage, path);
+    await uploadBytes(storageRef, file);
+    return getDownloadURL(storageRef);
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     const validationErrors = validateForm();
@@ -86,6 +100,21 @@ const CreatePro = ({ toggleCreatePro }) => {
       );
       const { user } = userCredential;
 
+      // Subir imagen de perfil
+      const profileImageUrl = formData.profileImage
+        ? await uploadFile(formData.profileImage, `pros/${user.uid}/profileImage`)
+        : null;
+
+      // Subir hoja de vida
+      const resumeUrl = formData.resume
+        ? await uploadFile(formData.resume, `pros/${user.uid}/resume`)
+        : null;
+
+      // Subir certificaciones
+      const certificationUrls = await Promise.all(
+        formData.certifications.map((file, index) => uploadFile(file, `pros/${user.uid}/certifications/certification_${index}`)),
+      );
+
       await setDoc(doc(db, 'pros', user.uid), {
         uid: user.uid,
         Nombre: formData.fullName,
@@ -95,6 +124,9 @@ const CreatePro = ({ toggleCreatePro }) => {
         telefono: formData.phone,
         terapias: formData.therapies,
         horarios: [],
+        profileImage: profileImageUrl,
+        resume: resumeUrl,
+        certifications: certificationUrls,
       });
 
       alert('Cuenta Pro creada con éxito');
@@ -107,6 +139,9 @@ const CreatePro = ({ toggleCreatePro }) => {
         password: '',
         confirmPassword: '',
         therapies: [],
+        profileImage: null,
+        resume: null,
+        certifications: [],
       });
       toggleCreatePro();
     } catch (error) {
@@ -210,6 +245,35 @@ const CreatePro = ({ toggleCreatePro }) => {
             {errors.confirmPassword && (
               <p className="error-text">{errors.confirmPassword}</p>
             )}
+          </div>
+          <div className="CreatePro-input-cont">
+            <label>Elegir Imagen de Perfil:</label>
+            <input
+              type="file"
+              name="profileImage"
+              onChange={handleChange}
+              accept="image/*"
+            />
+          </div>
+          <div className="CreatePro-input-cont">
+            <label>Sube tu Hoja de Vida:</label>
+            <input
+              type="file"
+              name="resume"
+              onChange={handleChange}
+              accept=".pdf,.doc,.docx"
+            />
+          </div>
+          <div className="CreatePro-input-cont">
+            <label>Sube tus Certificaciones (hasta 5 archivos):</label>
+            <input
+              type="file"
+              name="certifications"
+              onChange={handleChange}
+              accept=".pdf,.doc,.docx"
+              multiple
+              max={5}
+            />
           </div>
           <div className="CreatePro-therapies">
             <label>¿Con qué terapias vas a trabajar?</label>
