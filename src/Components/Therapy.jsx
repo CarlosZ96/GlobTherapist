@@ -162,7 +162,6 @@ const Therapy = () => {
           status: 'pending',
         }));
 
-        // Verificar y actualizar MisCitas
         await updateProMisCitas(pro.id, newMisCitas);
       }
 

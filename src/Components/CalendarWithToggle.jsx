@@ -109,7 +109,7 @@ const Calendar = ({
 
           return {
             date,
-            month: calculatedMonthName.toLowerCase(), // Asegurar que el mes esté en minúsculas
+            month: calculatedMonthName.toLowerCase(),
             time: formatTime(selectedTime),
             therapyType,
             status: 'pending',
@@ -137,28 +137,24 @@ const Calendar = ({
         const proData = proSnap.data();
         const prevHorarios = proData.horarios || [];
 
-        // Crear un array de timeSlots basado en el rango de horas seleccionado
         const timeSlots = [];
         for (let hour = startTime; hour < endTime; hour += 1) {
           timeSlots.push(formatTimeRange(hour));
         }
 
-        // Crear un nuevo array de horarios con los días seleccionados
         const newHorarios = selectedDay.map(({ date, monthOffset }) => {
           const monthIndex = new Date().getMonth() + monthOffset;
           const calculatedMonthName = new Date(2023, monthIndex).toLocaleString('es-ES', { month: 'long' });
 
           return {
             date,
-            month: calculatedMonthName.toLowerCase(), // Asegurar que el mes esté en minúsculas
+            month: calculatedMonthName.toLowerCase(),
             timeSlots,
           };
         });
 
-        // Combinar los horarios anteriores con los nuevos
         const updatedHorarios = [...prevHorarios, ...newHorarios];
 
-        // Actualizar el documento del profesional en Firestore
         await updateDoc(proRef, { horarios: updatedHorarios });
         console.log('Horarios actualizados en Firestore:', updatedHorarios);
         alert('Horarios confirmados correctamente.');
