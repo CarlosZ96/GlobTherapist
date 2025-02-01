@@ -13,7 +13,7 @@ const useMonthData = () => {
   const [days, setDays] = useState([]);
   const [monthName, setMonthName] = useState('');
   const [monthNumber, setMonthNumber] = useState(0);
-  const [monthOffset, setMonthOffset] = useState(0); // Nuevo estado para monthOffset
+  const [monthOffset, setMonthOffset] = useState(0);
 
   useEffect(() => {
     const firstDayOfMonth = startOfMonth(currentDate);

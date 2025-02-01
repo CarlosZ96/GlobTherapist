@@ -141,7 +141,7 @@ const Therapy = () => {
         const newMisCitas = selectedAppointments.map((app) => ({
           date: app.date,
           time: app.time,
-          month: app.month.toLowerCase(), // Asegurarse de que el mes esté en minúsculas
+          month: app.month.toLowerCase(),
           therapyType: formData.therapyType,
           description: formData.description,
           userName: formData.name,

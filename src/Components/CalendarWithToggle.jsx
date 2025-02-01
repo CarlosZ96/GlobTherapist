@@ -124,6 +124,48 @@ const Calendar = ({
       } catch (error) {
         console.error('Error al confirmar horarios:', error);
       }
+    } else if (collectionName === 'pros') {
+      try {
+        const proRef = doc(db, 'pros', currentUser.uid);
+        const proSnap = await getDoc(proRef);
+
+        if (!proSnap.exists()) {
+          console.error('El profesional no existe en Firestore.');
+          return;
+        }
+
+        const proData = proSnap.data();
+        const prevHorarios = proData.horarios || [];
+
+        // Crear un array de timeSlots basado en el rango de horas seleccionado
+        const timeSlots = [];
+        for (let hour = startTime; hour < endTime; hour += 1) {
+          timeSlots.push(formatTimeRange(hour));
+        }
+
+        // Crear un nuevo array de horarios con los días seleccionados
+        const newHorarios = selectedDay.map(({ date, monthOffset }) => {
+          const monthIndex = new Date().getMonth() + monthOffset;
+          const calculatedMonthName = new Date(2023, monthIndex).toLocaleString('es-ES', { month: 'long' });
+
+          return {
+            date,
+            month: calculatedMonthName.toLowerCase(), // Asegurar que el mes esté en minúsculas
+            timeSlots,
+          };
+        });
+
+        // Combinar los horarios anteriores con los nuevos
+        const updatedHorarios = [...prevHorarios, ...newHorarios];
+
+        // Actualizar el documento del profesional en Firestore
+        await updateDoc(proRef, { horarios: updatedHorarios });
+        console.log('Horarios actualizados en Firestore:', updatedHorarios);
+        alert('Horarios confirmados correctamente.');
+        setIsConfirmed(true);
+      } catch (error) {
+        console.error('Error al confirmar horarios:', error);
+      }
     }
   };
 
