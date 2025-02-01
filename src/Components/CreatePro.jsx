@@ -3,7 +3,9 @@ import React, { useState } from 'react';
 import PropTypes from 'prop-types';
 import { doc, setDoc } from 'firebase/firestore';
 import { createUserWithEmailAndPassword } from 'firebase/auth';
-import { auth, db, storage, ref, uploadBytes, getDownloadURL } from '../firebase';
+import {
+  auth, db, storage, ref, uploadBytes, getDownloadURL,
+} from '../firebase';
 import '../stylesheets/windo.css';
 
 const CreatePro = ({ toggleCreatePro }) => {
