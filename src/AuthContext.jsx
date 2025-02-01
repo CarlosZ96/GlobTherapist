@@ -76,22 +76,33 @@ export const AuthProvider = ({ children }) => {
     return unsubscribe;
   }, []);
 
-  // Efecto para cargar todos los profesionales al inicio
   useEffect(() => {
     fetchAllPros();
   }, []);
 
-  // Método para actualizar las citas del usuario
   const updateUserCitas = async (citas) => {
     if (!currentUser) return;
     const userRef = doc(db, 'users', currentUser.uid);
     await updateDoc(userRef, { Citas: citas });
   };
 
-  // Método para actualizar las citas del profesional
-  const updateProMisCitas = async (proId, misCitas) => {
-    const proRef = doc(db, 'pros', proId);
-    await updateDoc(proRef, { MisCitas: misCitas });
+  const updateProMisCitas = async (proId, newMisCitas) => {
+    try {
+      const proRef = doc(db, 'pros', proId);
+      const proSnap = await getDoc(proRef);
+      if (!proSnap.exists()) {
+        console.error('El profesional no existe en Firestore.');
+        return;
+      }
+      const proData = proSnap.data();
+      const prevMisCitas = proData.MisCitas || [];
+      const updatedMisCitas = [...prevMisCitas, ...newMisCitas];
+      await updateDoc(proRef, { MisCitas: updatedMisCitas });
+      console.log('MisCitas actualizadas en Firestore:', updatedMisCitas);
+    } catch (error) {
+      console.error('Error al actualizar MisCitas:', error);
+      throw error;
+    }
   };
 
   const login = (email, password) => signInWithEmailAndPassword(auth, email, password);
