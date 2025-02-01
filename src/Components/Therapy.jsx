@@ -6,6 +6,14 @@ import { useAuth } from '../AuthContext';
 import Calendar from './CalendarWithToggle';
 import '../stylesheets/Therapy.css';
 
+const normalizeText = (str) => {
+  return str
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase()
+    .replace(/\s+/g, '');
+};
+
 const Therapy = () => {
   const auth = getAuth();
   const user = auth.currentUser;
@@ -94,7 +102,8 @@ const Therapy = () => {
   };
 
   const handleTherapyTypeClick = (type) => {
-    setFormData({ ...formData, therapyType: type });
+    const normalizedType = normalizeText(type);
+    setFormData({ ...formData, therapyType: normalizedType });
   };
 
   const handleSubmit = async (event) => {
@@ -122,13 +131,16 @@ const Therapy = () => {
     }
 
     try {
+      // Normalizar el tipo de terapia
+      const normalizedTherapyType = normalizeText(formData.therapyType);
+
       // Actualizar las citas del usuario
       const updatedCitas = selectedAppointments.map((app) => ({
         ...app,
         name: formData.name,
         phone: formData.phone,
         email: formData.email,
-        therapyType: formData.therapyType,
+        therapyType: normalizedTherapyType, // Usar el tipo de terapia normalizado
         description: formData.description,
         status: 'confirmed',
       }));
@@ -142,7 +154,7 @@ const Therapy = () => {
           date: app.date,
           time: app.time,
           month: app.month.toLowerCase(),
-          therapyType: formData.therapyType,
+          therapyType: normalizedTherapyType, // Usar el tipo de terapia normalizado
           description: formData.description,
           userName: formData.name,
           userEmail: formData.email,
