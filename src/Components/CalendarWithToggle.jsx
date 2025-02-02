@@ -18,7 +18,7 @@ const Calendar = ({
     days,
     loading,
     monthName,
-    monthOffset, // Usar monthOffset desde el hook
+    monthOffset,
     changeMonth,
   } = useMonthData();
 

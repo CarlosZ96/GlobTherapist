@@ -129,38 +129,32 @@ const Therapy = () => {
     }
 
     try {
-      // Normalizar el tipo de terapia
       const normalizedTherapyType = normalizeText(formData.therapyType);
-
-      // Actualizar las citas del usuario
       const updatedCitas = selectedAppointments.map((app) => ({
         ...app,
         name: formData.name,
         phone: formData.phone,
         email: formData.email,
-        therapyType: normalizedTherapyType, // Usar el tipo de terapia normalizado
+        therapyType: normalizedTherapyType,
         description: formData.description,
         status: 'confirmed',
       }));
 
       await updateUserCitas(updatedCitas);
 
-      // Actualizar las citas del profesional
       const pro = pros.find((p) => p.Nombre === selectedPro);
       if (pro) {
         const newMisCitas = selectedAppointments.map((app) => ({
           date: app.date,
           time: app.time,
           month: app.month.toLowerCase(),
-          therapyType: normalizedTherapyType, // Usar el tipo de terapia normalizado
+          therapyType: normalizedTherapyType,
           description: formData.description,
           userName: formData.name,
           userEmail: formData.email,
           userPhone: formData.phone,
           status: 'pending',
         }));
-
-        // Verificar y actualizar MisCitas
         await updateProMisCitas(pro.id, newMisCitas);
       }
 
