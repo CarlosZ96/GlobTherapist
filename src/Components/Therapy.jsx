@@ -52,6 +52,13 @@ const Therapy = () => {
     therapyType: React.createRef(),
   };
 
+  const normalizeText = (text) => {
+    return text
+      .normalize('NFD') // Normaliza caracteres con tildes
+      .replace(/[\u0300-\u036f]/g, '') // Elimina diacríticos
+      .toLowerCase(); // Convierte a minúsculas
+  };
+
   const validateForm = () => {
     let isValid = true;
     const newErrors = {
@@ -122,13 +129,16 @@ const Therapy = () => {
     }
 
     try {
+      // Normalizar el tipo de terapia
+      const normalizedTherapyType = normalizeText(formData.therapyType);
+
       // Actualizar las citas del usuario
       const updatedCitas = selectedAppointments.map((app) => ({
         ...app,
         name: formData.name,
         phone: formData.phone,
         email: formData.email,
-        therapyType: formData.therapyType,
+        therapyType: normalizedTherapyType, // Usar el tipo de terapia normalizado
         description: formData.description,
         status: 'confirmed',
       }));
@@ -142,7 +152,7 @@ const Therapy = () => {
           date: app.date,
           time: app.time,
           month: app.month.toLowerCase(),
-          therapyType: formData.therapyType,
+          therapyType: normalizedTherapyType, // Usar el tipo de terapia normalizado
           description: formData.description,
           userName: formData.name,
           userEmail: formData.email,
