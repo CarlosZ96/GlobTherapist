@@ -20,7 +20,6 @@ export const AuthProvider = ({ children }) => {
   const [isAdmin, setIsAdmin] = useState(false);
   const [loading, setLoading] = useState(true);
 
-  // Función para cargar los datos del usuario
   const fetchUserData = async (user) => {
     try {
       const userDoc = await getDoc(doc(db, 'users', user.uid));
@@ -36,7 +35,6 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  // Función para cargar los datos del profesional
   const fetchProData = async (user) => {
     try {
       const proDoc = await getDoc(doc(db, 'pros', user.uid));
@@ -48,7 +46,6 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  // Función para cargar todos los profesionales
   const fetchAllPros = async () => {
     try {
       const prosCollection = await getDocs(collection(db, 'pros'));
@@ -59,7 +56,6 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  // Efecto para manejar la autenticación
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
       setCurrentUser(user);
