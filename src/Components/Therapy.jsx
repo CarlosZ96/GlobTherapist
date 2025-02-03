@@ -130,6 +130,7 @@ const Therapy = () => {
 
     try {
       const normalizedTherapyType = normalizeText(formData.therapyType);
+
       const updatedCitas = selectedAppointments.map((app) => ({
         ...app,
         name: formData.name,
@@ -143,22 +144,28 @@ const Therapy = () => {
       await updateUserCitas(updatedCitas);
 
       const pro = pros.find((p) => p.Nombre === selectedPro);
-      if (pro) {
-        const newMisCitas = selectedAppointments.map((app) => ({
-          date: app.date,
-          time: app.time,
-          month: app.month.toLowerCase(),
-          therapyType: normalizedTherapyType,
-          description: formData.description,
-          userName: formData.name,
-          userEmail: formData.email,
-          userPhone: formData.phone,
-          status: 'pending',
-        }));
-        await updateProMisCitas(pro.id, newMisCitas);
+      if (!pro) {
+        console.error('Profesional no encontrado.');
+        alert('El profesional seleccionado no existe.');
+        return;
       }
 
+      const newMisCitas = selectedAppointments.map((app) => ({
+        date: app.date,
+        time: app.time,
+        month: app.month.toLowerCase(),
+        therapyType: normalizedTherapyType,
+        description: formData.description,
+        userName: formData.name,
+        userEmail: formData.email,
+        userPhone: formData.phone,
+        status: 'pending',
+      }));
+
+      await updateProMisCitas(pro.id, newMisCitas);
+
       alert('¡Formulario enviado exitosamente!');
+
       setFormData({
         name: '',
         phone: '',
@@ -291,7 +298,7 @@ const Therapy = () => {
           )}
         </div>
         <div className="DynamiCanlendar-btn-cont">
-          <button type="submit">
+          <button type="submit" className="DynamiCanlendar-btn">
             <h4>Confirmar</h4>
           </button>
         </div>
