@@ -3,7 +3,7 @@ import { getAuth } from 'firebase/auth';
 import { doc, getDoc } from 'firebase/firestore';
 import { db } from '../firebase';
 import { useAuth } from '../AuthContext';
-import Calendar from './CalendarWithToggle';
+import Calendar from './Calendar/CalendarWithToggle';
 import '../stylesheets/Therapy.css';
 
 const Therapy = () => {

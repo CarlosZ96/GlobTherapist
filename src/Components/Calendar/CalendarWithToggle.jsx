@@ -5,11 +5,12 @@ import PropTypes from 'prop-types';
 import {
   doc, getDoc, updateDoc, getDocs, collection,
 } from 'firebase/firestore';
-import { db } from '../firebase';
-import { useAuth } from '../AuthContext';
-import useMonthData from '../hooks/useMonthData';
-import User from '../img/user.png';
-import '../stylesheets/month.css';
+import { db } from '../../firebase';
+import { useAuth } from '../../AuthContext';
+import useMonthData from '../../hooks/useMonthData';
+import ProModal from '../Hdvwindow';
+import User from '../../img/user.png';
+import '../../stylesheets/month.css';
 
 const Calendar = ({
   collection: collectionName, onDateSelection, therapyType, onProSelection,
@@ -32,14 +33,20 @@ const Calendar = ({
   const [isConfirmed, setIsConfirmed] = useState(false);
   const [availablePros, setAvailablePros] = useState([]);
   const [selectedPro, setSelectedPro] = useState(null);
+  const [selectedProId, setSelectedProId] = useState(null);
 
   if (loading) {
     return <div>Loading...</div>;
   }
 
-  const handleProClick = (proName) => {
-    setSelectedPro((prev) => (prev === proName ? null : proName));
-    onProSelection(proName);
+  const handleProClick = (proId) => {
+    setSelectedPro((prev) => (prev === proId ? null : proId));
+    onProSelection(proId);
+    setSelectedProId(proId);
+  };
+
+  const handleCloseModal = () => {
+    setSelectedProId(null);
   };
 
   const handleDayClick = (day) => {
@@ -265,7 +272,7 @@ const Calendar = ({
 
             if (hasMatchingSchedule) {
               console.log('Profesional coincide:', Nombre);
-              matchingPros.push(Nombre);
+              matchingPros.push({ id: proDoc.id, name: Nombre });
             } else {
               console.log('Profesional no coincide:', Nombre);
             }
@@ -410,15 +417,18 @@ const Calendar = ({
             <button
               key={index}
               type="button"
-              className={`user-info-comt ${selectedPro === pro ? 'active' : 'inactive'}`}
-              onClick={() => handleProClick(pro)}
+              className={`user-info-comt ${selectedPro === pro.id ? 'active' : 'inactive'}`}
+              onClick={() => handleProClick(pro.id)}
             >
               <div className="user-image-comt">
                 <img src={User} alt="user" className="pro-img" />
               </div>
-              <h3>{pro}</h3>
+              <h3>{pro.name}</h3>
             </button>
           ))}
+          {selectedProId && (
+            <ProModal proId={selectedProId} onClose={handleCloseModal} />
+          )}
         </div>
       </div>
     </div>

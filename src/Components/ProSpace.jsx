@@ -2,7 +2,7 @@
 import React from 'react';
 import { collection } from 'firebase/firestore';
 import { db } from '../firebase';
-import Calendar from './CalendarWithToggle';
+import Calendar from './Calendar/CalendarWithToggle';
 import ProData from './ProData';
 import Hdv from './Hdv';
 import '../stylesheets/prospace.css';
