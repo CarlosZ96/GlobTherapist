@@ -4,6 +4,7 @@ import { collection } from 'firebase/firestore';
 import { db } from '../firebase';
 import Calendar from './CalendarWithToggle';
 import ProData from './ProData';
+import Hdv from './Hdv';
 import '../stylesheets/prospace.css';
 
 const ProSpace = () => {
@@ -12,6 +13,7 @@ const ProSpace = () => {
     <div className="prospace-cont">
       <Calendar collection="pros" />
       <ProData />
+      <Hdv />
     </div>
   );
 };
