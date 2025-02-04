@@ -1,13 +1,10 @@
-/* eslint-disable react/no-array-index-key */
-/* eslint-disable no-shadow */
 import React, { useState } from 'react';
 import PropTypes from 'prop-types';
-import {
-  doc, getDoc, updateDoc, getDocs, collection,
-} from 'firebase/firestore';
-import { db } from '../../firebase';
 import { useAuth } from '../../AuthContext';
 import useMonthData from '../../hooks/useMonthData';
+import useDateTime from '../../hooks/useDateTime';
+import usePros from '../../hooks/usePros';
+import useConfirmation from '../../hooks/useConfirmation';
 import ProModal from '../Hdvwindow';
 import User from '../../img/user.png';
 import '../../stylesheets/month.css';
@@ -16,38 +13,45 @@ const Calendar = ({
   collection: collectionName, onDateSelection, therapyType, onProSelection,
 }) => {
   const {
-    days,
-    loading,
-    monthName,
-    monthOffset,
-    changeMonth,
+    days, loading, monthName, monthOffset, changeMonth,
   } = useMonthData();
-
-  console.log('Renderizando Calendar');
-  const daysOfWeek = ['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom'];
   const { currentUser } = useAuth();
-  const [startTime, setStartTime] = useState(8);
-  const [endTime, setEndTime] = useState(22);
-  const [selectedTime, setSelectedTime] = useState(7);
+
+  // Hook useDateTime
+  const {
+    startTime,
+    endTime,
+    selectedTime,
+    setStartTime,
+    setEndTime,
+    setSelectedTime,
+    incrementTime,
+    decrementTime,
+    formatTime,
+    formatTimeRange,
+  } = useDateTime();
+
+  // Hook para manejar profesionales
+  const {
+    availablePros,
+    selectedPro,
+    selectedProId,
+    setSelectedPro,
+    setSelectedProId,
+    filterDates,
+  } = usePros();
+
   const [selectedDay, setSelectedDay] = useState([]);
-  const [isConfirmed, setIsConfirmed] = useState(false);
-  const [availablePros, setAvailablePros] = useState([]);
-  const [selectedPro, setSelectedPro] = useState(null);
-  const [selectedProId, setSelectedProId] = useState(null);
+
+  const {
+    isConfirmed,
+    handleConfirmHours,
+    handleEditHours,
+  } = useConfirmation(collectionName, currentUser, selectedDay, selectedTime, therapyType);
 
   if (loading) {
     return <div>Loading...</div>;
   }
-
-  const handleProClick = (proId) => {
-    setSelectedPro((prev) => (prev === proId ? null : proId));
-    onProSelection(proId);
-    setSelectedProId(proId);
-  };
-
-  const handleCloseModal = () => {
-    setSelectedProId(null);
-  };
 
   const handleDayClick = (day) => {
     if (collectionName === 'users') {
@@ -61,234 +65,14 @@ const Calendar = ({
     }
   };
 
-  const incrementTime = (setter, current) => {
-    if (collectionName === 'pros') {
-      if (setter === setStartTime && current < endTime - 1) setter(current + 1);
-      if (setter === setEndTime && current < 22) setter(current + 1);
-    } else if (collectionName === 'users' && selectedTime < 22) {
-      setSelectedTime(selectedTime + 1);
-    }
+  const handleProClick = (proId) => {
+    setSelectedPro((prev) => (prev === proId ? null : proId));
+    onProSelection(proId);
+    setSelectedProId(proId);
   };
 
-  const decrementTime = (setter, current) => {
-    if (collectionName === 'pros') {
-      if (setter === setStartTime && current > 8) setter(current - 1);
-      if (setter === setEndTime && current > startTime + 1) setter(current - 1);
-    } else if (collectionName === 'users' && selectedTime > 7) {
-      setSelectedTime(selectedTime - 1);
-    }
-  };
-
-  const formatTime = (hour) => {
-    const period = hour >= 12 ? 'pm' : 'am';
-    const formattedHour = hour > 12 ? hour - 12 : hour;
-    return `${formattedHour}:00${period}`;
-  };
-
-  const formatTimeRange = (hour) => {
-    const start = `${hour > 12 ? hour - 12 : hour}:00${hour >= 12 ? 'pm' : 'am'}`;
-    const end = `${hour > 12 ? hour - 12 : hour}:40${hour >= 12 ? 'pm' : 'am'}`;
-    return `${start}-${end}`;
-  };
-
-  const handleConfirmHours = async (event) => {
-    event.preventDefault();
-    if (!selectedDay.length || selectedTime === null) {
-      alert('Por favor, selecciona al menos un día y una hora.');
-      return;
-    }
-
-    if (collectionName === 'users') {
-      try {
-        const userRef = doc(db, 'users', currentUser.uid);
-        const userSnap = await getDoc(userRef);
-
-        if (!userSnap.exists()) {
-          console.error('El usuario no existe en Firestore.');
-          return;
-        }
-
-        const userData = userSnap.data();
-        const prevCitas = userData.Citas || [];
-
-        const newCitas = selectedDay.map(({ date, monthOffset }) => {
-          const monthIndex = new Date().getMonth() + monthOffset;
-          const calculatedMonthName = new Date(2023, monthIndex).toLocaleString('es-ES', { month: 'long' });
-
-          return {
-            date,
-            month: calculatedMonthName.toLowerCase(),
-            time: formatTime(selectedTime),
-            therapyType,
-            status: 'pending',
-          };
-        });
-        const updatedCitas = [...prevCitas, ...newCitas];
-        await updateDoc(userRef, { Citas: updatedCitas });
-        console.log('Citas creadas en Firestore:', updatedCitas);
-        alert('Citas confirmadas correctamente.');
-        setIsConfirmed(true);
-        onDateSelection(updatedCitas);
-      } catch (error) {
-        console.error('Error al confirmar horarios:', error);
-      }
-    } else if (collectionName === 'pros') {
-      try {
-        const proRef = doc(db, 'pros', currentUser.uid);
-        const proSnap = await getDoc(proRef);
-
-        if (!proSnap.exists()) {
-          console.error('El profesional no existe en Firestore.');
-          return;
-        }
-
-        const proData = proSnap.data();
-        const prevHorarios = proData.horarios || [];
-
-        const timeSlots = [];
-        for (let hour = startTime; hour < endTime; hour += 1) {
-          timeSlots.push(formatTimeRange(hour));
-        }
-
-        const newHorarios = selectedDay.map(({ date, monthOffset }) => {
-          const monthIndex = new Date().getMonth() + monthOffset;
-          const calculatedMonthName = new Date(2023, monthIndex).toLocaleString('es-ES', { month: 'long' });
-
-          return {
-            date,
-            month: calculatedMonthName.toLowerCase(),
-            timeSlots,
-          };
-        });
-
-        const updatedHorarios = [...prevHorarios, ...newHorarios];
-
-        await updateDoc(proRef, { horarios: updatedHorarios });
-        console.log('Horarios actualizados en Firestore:', updatedHorarios);
-        alert('Horarios confirmados correctamente.');
-        setIsConfirmed(true);
-      } catch (error) {
-        console.error('Error al confirmar horarios:', error);
-      }
-    }
-  };
-
-  const handleEditHours = async () => {
-    try {
-      const userRef = doc(db, collectionName, currentUser.uid);
-      const userSnap = await getDoc(userRef);
-      if (!userSnap.exists()) {
-        console.log(`El usuario no existe en la colección ${collectionName}.`);
-        return;
-      }
-      const horariosKey = collectionName === 'pros' ? 'horarios' : 'Citas';
-      await updateDoc(userRef, { [horariosKey]: [] });
-      console.log(`${horariosKey} eliminados.`);
-      setIsConfirmed(false);
-    } catch (error) {
-      console.error('Error al eliminar horarios:', error);
-    }
-  };
-
-  const removeAccents = (str) => {
-    return str.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
-  };
-
-  const filterDates = async () => {
-    console.log('Ejecutando filterDates...');
-
-    try {
-      if (!currentUser) {
-        console.error('No hay usuario logueado.');
-        return;
-      }
-
-      const userDocRef = doc(db, 'users', currentUser.uid);
-      const userDocSnap = await getDoc(userDocRef);
-
-      if (!userDocSnap.exists()) {
-        console.error('Usuario no encontrado en Firestore.');
-        return;
-      }
-
-      const userData = userDocSnap.data();
-
-      const firstAppointment = userData.Citas?.[0];
-      if (!firstAppointment) {
-        console.log('El usuario no tiene citas.');
-        return;
-      }
-
-      const {
-        month, date, time, therapyType,
-      } = firstAppointment;
-      console.log('Cita del usuario:', {
-        month, date, time, therapyType,
-      });
-
-      if (!therapyType) {
-        console.error('No se encontró el tipo de terapia en la cita.');
-        return;
-      }
-
-      const normalizedTherapyType = removeAccents(therapyType);
-
-      const prosCollectionRef = collection(db, 'pros');
-      const prosQuerySnapshot = await getDocs(prosCollectionRef);
-
-      const matchingPros = [];
-
-      prosQuerySnapshot.forEach((proDoc) => {
-        const proData = proDoc.data();
-        const { horarios, terapias, Nombre } = proData;
-
-        if (terapias && terapias.length > 0) {
-          const normalizedTerapias = terapias.map((t) => removeAccents(t));
-          const offersTherapy = normalizedTerapias.includes(normalizedTherapyType);
-          console.log('¿El profesional ofrece la terapia requerida?', offersTherapy);
-          if (offersTherapy) {
-            console.log('El profesional ofrece la terapia requerida.');
-
-            const hasMatchingSchedule = horarios?.some((horario) => {
-              const isMonthMatch = horario.month?.toLowerCase() === month?.toLowerCase();
-              const isDateMatch = horario.date === date;
-              const isTimeMatch = horario.timeSlots?.some((timeSlot) => {
-                const [startTimeStr] = timeSlot.split('-');
-                return startTimeStr === time;
-              });
-
-              console.log('Comparativo detallado:', {
-                userDate: date,
-                proDate: horario.date,
-                userTime: time,
-                proTimeSlots: horario.timeSlots,
-                isMonthMatch,
-                isDateMatch,
-                isTimeMatch,
-              });
-
-              return isMonthMatch && isDateMatch && isTimeMatch;
-            });
-
-            if (hasMatchingSchedule) {
-              console.log('Profesional coincide:', Nombre);
-              matchingPros.push({ id: proDoc.id, name: Nombre });
-            } else {
-              console.log('Profesional no coincide:', Nombre);
-            }
-          } else {
-            console.log('El profesional no ofrece la terapia requerida:', Nombre);
-          }
-        } else {
-          console.log('El profesional no tiene terapias definidas:', Nombre);
-        }
-      });
-
-      console.log('Profesionales disponibles:', matchingPros);
-      setAvailablePros(matchingPros);
-    } catch (error) {
-      console.error('Error al obtener los profesionales:', error);
-    }
+  const handleCloseModal = () => {
+    setSelectedProId(null);
   };
 
   return (
@@ -312,8 +96,8 @@ const Calendar = ({
       </div>
       <hr className="date-blue-line" />
       <div className="calendar-week-cont">
-        {daysOfWeek.map((day, index) => (
-          <div key={index} className="calendar-day-header">
+        {['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom'].map((day) => (
+          <div key={day} className="calendar-day-header">
             {day}
           </div>
         ))}
@@ -321,10 +105,10 @@ const Calendar = ({
       <hr className="date-blue-line" />
       <div className="Choose-Day-Cont">
         <div className="Calendar-cont">
-          {days && days.length > 0 && days.map((day, index) => (
+          {days.map((day) => (
             <button
               type="button"
-              key={index}
+              key={day}
               className={`calendar-day ${selectedDay.some((d) => d.date === day?.date && d.monthOffset === monthOffset) ? 'active' : 'inactive'}`}
               onClick={() => handleDayClick(day)}
               disabled={!day || isConfirmed}
@@ -358,17 +142,17 @@ const Calendar = ({
             <div className="Time-selector">
               <h3>De:</h3>
               <div className="Time-control">
-                <button type="button" onClick={() => decrementTime(setStartTime, startTime)}>-</button>
+                <button type="button" onClick={() => decrementTime(setStartTime, startTime, 8)}>-</button>
                 <div>{formatTime(startTime)}</div>
-                <button type="button" onClick={() => incrementTime(setStartTime, startTime)}>+</button>
+                <button type="button" onClick={() => incrementTime(setStartTime, startTime, endTime - 1)}>+</button>
               </div>
             </div>
             <div className="Time-selector">
               <h3>A:</h3>
               <div className="Time-control">
-                <button type="button" onClick={() => decrementTime(setEndTime, endTime)}>-</button>
+                <button type="button" onClick={() => decrementTime(setEndTime, endTime, startTime + 1)}>-</button>
                 <div>{formatTime(endTime)}</div>
-                <button type="button" onClick={() => incrementTime(setEndTime, endTime)}>+</button>
+                <button type="button" onClick={() => incrementTime(setEndTime, endTime, 22)}>+</button>
               </div>
             </div>
           </div>
@@ -376,9 +160,9 @@ const Calendar = ({
           <div className="Hours-selector">
             <h3>Selecciona horario:</h3>
             <div className="Time-control">
-              <button type="button" onClick={() => decrementTime()}>-</button>
+              <button type="button" onClick={() => decrementTime(setSelectedTime, selectedTime, 7)}>-</button>
               <div>{formatTimeRange(selectedTime)}</div>
-              <button type="button" onClick={() => incrementTime()}>+</button>
+              <button type="button" onClick={() => incrementTime(setSelectedTime, selectedTime, 22)}>+</button>
             </div>
           </div>
         )}
@@ -389,7 +173,7 @@ const Calendar = ({
             onClick={handleConfirmHours}
             disabled={isConfirmed}
           >
-            <h3 disabled={isConfirmed}>{collectionName === 'pros' ? 'Confirmar mis horarios' : 'Confirmar hora'}</h3>
+            <h3>{collectionName === 'pros' ? 'Confirmar mis horarios' : 'Confirmar hora'}</h3>
           </button>
           {isConfirmed && (
             <button type="button" className="Edit-Hours" onClick={handleEditHours}>
@@ -407,15 +191,15 @@ const Calendar = ({
           <button
             type="button"
             disabled={!isConfirmed}
-            onClick={filterDates}
+            onClick={() => filterDates(currentUser, therapyType)}
           >
             <h3>Ver pros</h3>
           </button>
         </div>
         <div className="pro-img-def">
-          {availablePros.map((pro, index) => (
+          {availablePros.map((pro) => (
             <button
-              key={index}
+              key={pro.id}
               type="button"
               className={`user-info-comt ${selectedPro === pro.id ? 'active' : 'inactive'}`}
               onClick={() => handleProClick(pro.id)}

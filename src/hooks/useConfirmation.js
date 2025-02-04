@@ -24,12 +24,6 @@ const useConfirmation = (collectionName, currentUser, selectedDay, selectedTime,
       const userData = userSnap.data();
       const prevCitas = userData.Citas || [];
 
-      const formatTime = (time) => {
-        const hours = time.getHours().toString().padStart(2, '0');
-        const minutes = time.getMinutes().toString().padStart(2, '0');
-        return `${hours}:${minutes}`;
-      };
-
       const newCitas = selectedDay.map(({ date, monthOffset }) => {
         const monthIndex = new Date().getMonth() + monthOffset;
         const calculatedMonthName = new Date(2023, monthIndex).toLocaleString('es-ES', { month: 'long' });
@@ -48,6 +42,7 @@ const useConfirmation = (collectionName, currentUser, selectedDay, selectedTime,
       console.log('Citas creadas en Firestore:', updatedCitas);
       alert('Citas confirmadas correctamente.');
       setIsConfirmed(true);
+      onDateSelection(updatedCitas);
     } catch (error) {
       console.error('Error al confirmar horarios:', error);
     }
