@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import PropTypes from 'prop-types';
+import { v4 as uuidv4 } from 'uuid';
 import { useAuth } from '../../AuthContext';
 import useMonthData from '../../hooks/useMonthData';
 import useDateTime from '../../hooks/useDateTime';
@@ -47,7 +48,15 @@ const Calendar = ({
     isConfirmed,
     handleConfirmHours,
     handleEditHours,
-  } = useConfirmation(collectionName, currentUser, selectedDay, selectedTime, therapyType);
+  } = useConfirmation(
+    collectionName,
+    currentUser,
+    selectedDay,
+    selectedTime,
+    therapyType,
+    onDateSelection,
+    formatTime,
+  );
 
   if (loading) {
     return <div>Loading...</div>;
@@ -97,7 +106,7 @@ const Calendar = ({
       <hr className="date-blue-line" />
       <div className="calendar-week-cont">
         {['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom'].map((day) => (
-          <div key={day} className="calendar-day-header">
+          <div key={uuidv4()} className="calendar-day-header">
             {day}
           </div>
         ))}
@@ -108,7 +117,7 @@ const Calendar = ({
           {days.map((day) => (
             <button
               type="button"
-              key={day}
+              key={uuidv4()}
               className={`calendar-day ${selectedDay.some((d) => d.date === day?.date && d.monthOffset === monthOffset) ? 'active' : 'inactive'}`}
               onClick={() => handleDayClick(day)}
               disabled={!day || isConfirmed}
@@ -199,7 +208,7 @@ const Calendar = ({
         <div className="pro-img-def">
           {availablePros.map((pro) => (
             <button
-              key={pro.id}
+              key={uuidv4()}
               type="button"
               className={`user-info-comt ${selectedPro === pro.id ? 'active' : 'inactive'}`}
               onClick={() => handleProClick(pro.id)}

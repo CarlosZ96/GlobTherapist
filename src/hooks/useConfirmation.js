@@ -3,7 +3,15 @@ import { useState } from 'react';
 import { doc, getDoc, updateDoc } from 'firebase/firestore';
 import { db } from '../firebase';
 
-const useConfirmation = (collectionName, currentUser, selectedDay, selectedTime, therapyType) => {
+const useConfirmation = (
+  collectionName,
+  currentUser,
+  selectedDay,
+  selectedTime,
+  therapyType,
+  onDateSelection,
+  formatTime,
+) => {
   const [isConfirmed, setIsConfirmed] = useState(false);
 
   const handleConfirmHours = async () => {
@@ -42,7 +50,7 @@ const useConfirmation = (collectionName, currentUser, selectedDay, selectedTime,
       console.log('Citas creadas en Firestore:', updatedCitas);
       alert('Citas confirmadas correctamente.');
       setIsConfirmed(true);
-      onDateSelection(updatedCitas);
+      onDateSelection(updatedCitas); // Llamar a onDateSelection aquí
     } catch (error) {
       console.error('Error al confirmar horarios:', error);
     }
