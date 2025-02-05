@@ -26,8 +26,8 @@ const Therapy = () => {
     setShowAppointmentError(false);
   };
 
-  const handleProSelection = (proName) => {
-    setSelectedPro(proName);
+  const handleProSelection = (proId) => {
+    setSelectedPro(proId);
   };
 
   const [formData, setFormData] = useState({
@@ -143,7 +143,8 @@ const Therapy = () => {
 
       await updateUserCitas(updatedCitas);
 
-      const pro = pros.find((p) => p.Nombre === selectedPro);
+      // Buscar el profesional por su ID
+      const pro = pros.find((p) => p.id === selectedPro);
       if (!pro) {
         console.error('Profesional no encontrado.');
         alert('El profesional seleccionado no existe.');

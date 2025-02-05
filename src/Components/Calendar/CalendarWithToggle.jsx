@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import PropTypes from 'prop-types';
 import { v4 as uuidv4 } from 'uuid';
 import { useAuth } from '../../AuthContext';
@@ -17,6 +17,14 @@ const Calendar = ({
     days, loading, monthName, monthOffset, changeMonth,
   } = useMonthData();
   const { currentUser } = useAuth();
+
+  const normalizeText = (text) => {
+    return text
+      .toLowerCase()
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .replace(/\s+/g, '');
+  };
 
   // Hook useDateTime
   const {
@@ -58,9 +66,7 @@ const Calendar = ({
     formatTime,
   );
 
-  if (loading) {
-    return <div>Loading...</div>;
-  }
+  const normalizedTherapyType = normalizeText(therapyType);
 
   const handleDayClick = (day) => {
     if (collectionName === 'users') {
@@ -83,6 +89,19 @@ const Calendar = ({
   const handleCloseModal = () => {
     setSelectedProId(null);
   };
+
+  useEffect(() => {
+    console.log('Componente Calendar renderizado');
+    console.log('therapyType:', therapyType);
+    console.log('therapyType normalizado:', normalizedTherapyType);
+    console.log('isConfirmed:', isConfirmed);
+    console.log('availablePros:', availablePros);
+    console.log('selectedDay:', selectedDay);
+  }, [therapyType, isConfirmed, availablePros, selectedDay]);
+
+  if (loading) {
+    return <div>Loading...</div>;
+  }
 
   return (
     <div className="DynamiCanlendar-cont">
@@ -200,7 +219,13 @@ const Calendar = ({
           <button
             type="button"
             disabled={!isConfirmed}
-            onClick={() => filterDates(currentUser, therapyType)}
+            onClick={() => {
+              console.log('isConfirmed:', isConfirmed);
+              console.log('currentUser:', currentUser);
+              console.log('therapyType:', therapyType);
+              console.log('therapyType normalizado:', normalizedTherapyType);
+              filterDates(currentUser, normalizedTherapyType);
+            }}
           >
             <h3>Ver pros</h3>
           </button>
@@ -208,7 +233,7 @@ const Calendar = ({
         <div className="pro-img-def">
           {availablePros.map((pro) => (
             <button
-              key={uuidv4()}
+              key={pro.id}
               type="button"
               className={`user-info-comt ${selectedPro === pro.id ? 'active' : 'inactive'}`}
               onClick={() => handleProClick(pro.id)}

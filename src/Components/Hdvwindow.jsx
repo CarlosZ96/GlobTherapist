@@ -8,6 +8,7 @@ import User from '../img/user.png';
 const Hdvwindow = ({ proId, onClose }) => {
   const [proData, setProData] = React.useState(null);
   const [profileImage, setProfileImage] = React.useState(User);
+
   React.useEffect(() => {
     const fetchProData = async () => {
       try {
@@ -29,7 +30,7 @@ const Hdvwindow = ({ proId, onClose }) => {
   React.useEffect(() => {
     const fetchProfileImage = async () => {
       try {
-        const imageRef = ref(storage, `profileImages/${proId}`);
+        const imageRef = ref(storage, `profileImages/${proId}/profile.jpg`); // Ruta actualizada
         const url = await getDownloadURL(imageRef);
         setProfileImage(url);
       } catch (error) {
@@ -79,6 +80,7 @@ const Hdvwindow = ({ proId, onClose }) => {
     </div>
   );
 };
+
 Hdvwindow.propTypes = {
   proId: PropTypes.string.isRequired,
   onClose: PropTypes.func.isRequired,
